@@ -1,0 +1,30 @@
+#This file specifies the *file name* for each parameter
+#Specified file contains possible values for that parameter
+#Note that all these files should be under metadata folder in $SOCIAL_GEN_HOME
+POS_ADJ,posAdj.txt
+NEG_ADJ,negAdj.txt
+POS_FEEL,posFeel.txt
+NEG_FEEL,negFeel.txt
+#
+#
+SERV_VERB,serviceVerb.txt
+JARGON,jargon.txt
+RARE_LOC,locRare.txt
+MED_LOC,locMed.txt
+FREQ_LOC,locFreq.txt
+#
+RARE_VENDOR,vendorRare.txt
+MED_VENDOR,vendorMed.txt
+FREQ_VENDOR,vendorFreq.txt
+#
+#
+DEV_VERB,deviceVerb.txt
+TIME,time.txt
+#
+RARE_DEV,deviceRare.txt
+MED_DEV,deviceMed.txt
+FREQ_DEV,deviceFreq.txt
+#
+RARE_PART,partRare.txt
+MED_PART,partMed.txt
+FREQ_PART,partFreq.txt

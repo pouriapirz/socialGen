@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Dbgen>
+<facebookUsers>1000</facebookUsers>
+<twitterUsers>1000</twitterUsers>
+<avgMsg>5</avgMsg>
+<avgTweet>5</avgTweet>
+
+<Partitions>
+
+<partition>
+<name>p1</name>
+<host>localhost</host>
+<path>/tmp/p1</path>
+</partition>
+
+<partition>
+<name>p2</name>
+<host>localhost</host>
+<path>/tmp/p2</path>
+</partition>
+
+</Partitions>
+
+</Dbgen>
