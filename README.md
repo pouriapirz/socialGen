@@ -1,5 +1,5 @@
 # SocialGen
-**SocialGen** is a tool for generating large quantities of synthetic data that models status updates/tweets from users of two imaginary social networks. SocialGen can be configured to run in a parallel/distributed fashion generating partitions of data in parallel using a cluster of machines. SocialGen takes care of managing (primary) key conflicts across data partitions.
+**SocialGen** is a tool for generating large quantities of synthetic data that models status updates/tweets from users of two imaginary social networks. SocialGen can be configured to run in a parallel/distributed fashion generating partitions of data in parallel using a cluster of machines.
 
 Social-Gen generates data in Asterix Data Model (ADM) format. Here is a sample data type definition for the output of SocialGen:
 
