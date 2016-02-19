@@ -3,49 +3,49 @@
 
 SocialGen generates data in Asterix Data Model (ADM) format. Here is a sample data type definition for the output of SocialGen:
 
-```
-create type EmploymentType as {
-organization_name: string,
-start_date: date,
-end_date: date?
-}
-
-create type FacebookUserType as {
-id: int64,
-alias: string,
-name: string,
-user_since: datetime,
-friend_ids: {{ int64 }},
-employment: [EmploymentType]
-}
-
-create type FacebookMessageType as {
-message_id: int64,
-author_id: int64,
-in_response_to: int64?,
-sender_location: point,
-send_time: datetime,
-message: string
-}
-
-create type TwitterUserType as {
-screen_name: string,
-lang: string,
-friends_count: int32,
-statuses_count: int32,
-name: string,
-followers_count: int32
-}
-
-create type TweetMessageType as {
-tweetid: int64,    
-user: TwitterUserType,
-sender_location: point,
-send_time: datetime,
-referred_topics: {{ string }},
-message_text: string
-}
-```
+  ```
+  create type EmploymentType as {
+  organization_name: string,
+  start_date: date,
+  end_date: date?
+  }
+  
+  create type FacebookUserType as {
+  id: int64,
+  alias: string,
+  name: string,
+  user_since: datetime,
+  friend_ids: {{ int64 }},
+  employment: [EmploymentType]
+  }
+  
+  create type FacebookMessageType as {
+  message_id: int64,
+  author_id: int64,
+  in_response_to: int64?,
+  sender_location: point,
+  send_time: datetime,
+  message: string
+  }
+  
+  create type TwitterUserType as {
+  screen_name: string,
+  lang: string,
+  friends_count: int32,
+  statuses_count: int32,
+  name: string,
+  followers_count: int32
+  }
+  
+  create type TweetMessageType as {
+  tweetid: int64,    
+  user: TwitterUserType,
+  sender_location: point,
+  send_time: datetime,
+  referred_topics: {{ string }},
+  message_text: string
+  }
+  ```
 
 # Using SocialGen
 ## Prerequisites
@@ -76,7 +76,7 @@ Upon a successful build, a new directory named *target* will be created under SO
   
   2. conf.xml: This file describes the input parameters to SocialGen and properties of each partition of the generated data. You need to specify the total number of FacebookUsers and TwitterUsers records in the social network along with the average number of messages and tweets per user. Moreover, for each partition of the generated data, you specify the machine that the partition resides on and the absolute path for that partition. Please note that the machine should be a valid and accessible machine that is already listed in the machines file (see above) and the path to the partition should be writable.
 
-  As an example, imagine we have two machines: _rainbow-1_ and _rainbow-2_, while on each one of them we want to have two partitions of generated data such that partitions _p0_ and _p1_ reside on rainbow-1 and partitions _p2_ and _p3_ reside on rainbow-2. Moreover, assume we decide to have 1000 users in the FacebookUsers dataset with an average of 5 messages per user and 2000 users as the TweitterUsers with an average of 10 tweets per user. The configuration files for this example would look like as:
+  As an example, imagine we have two machines: _rainbow-1_ and _rainbow-2_, while on each one of them we want to have two partitions of generated data such that partitions _p0_ and _p1_ reside on rainbow-1 and partitions _p2_ and _p3_ reside on rainbow-2. Moreover, assume we decide to have 1000 users in the FacebookUsers dataset with an average of 5 messages per user and 2000 users as the TwitterUsers with an average of 10 tweets per user. The configuration files for this example would look like as:
 
   _machines_ file:
   ```
