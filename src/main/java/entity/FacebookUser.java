@@ -3,21 +3,25 @@ package entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import datatype.DateTime;
+import socialGen.AdmAppendVisitor;
+import socialGen.IAppendVisitor;
+
 public class FacebookUser {
 
     private long id;
     private String alias;
     private String name;
-    private String userSince;
+    private DateTime userSince;
     private long[] friendIds;
-    private List<Employment> employment;
+    private Employments employment;
 
     public FacebookUser() {
 
     }
 
-    public FacebookUser(long id, String alias, String name, String userSince, long[] friendIds,
-            List<Employment> employment) {
+    public FacebookUser(long id, String alias, String name, DateTime userSince, long[] friendIds,
+                        Employments employment) {
         this.id = id;
         this.alias = alias;
         this.name = name;
@@ -38,7 +42,7 @@ public class FacebookUser {
         return name;
     }
 
-    public String getUserSince() {
+    public DateTime getUserSince() {
         return userSince;
     }
 
@@ -46,43 +50,22 @@ public class FacebookUser {
         return friendIds;
     }
 
-    public List<Employment> getEmployment() {
+    public Employments getEmployment() {
         return employment;
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("{");
-        builder.append("\"id\": int64(\"").append(id).append("\")");
-        builder.append(", ");
-        builder.append("\"alias\":" + "\"" + alias + "\"");
-        builder.append(", ");
-        builder.append("\"name\":" + "\"" + name + "\"");
-        builder.append(", ");
-        builder.append("\"user_since\":" + userSince);
-        builder.append(", ");
-        builder.append("\"friend_ids\":");
-        builder.append("{{");
-        for (int i = 0; i < friendIds.length; i++) {
-            builder.append("int64(\"").append(friendIds[i] + "\")");
-            builder.append(", ");
-        }
-        if (friendIds.length > 0) {
-            builder.deleteCharAt(builder.lastIndexOf(","));
-        }
-        builder.append("}}");
-        builder.append(", ");
-        builder.append("\"employment\":");
-        builder.append("[");
-        int empCount = employment.size();
-        for (int i = 0; i < empCount - 1; i++) {
-            builder.append(employment.get(i).toString());
-            builder.append(", ");
-        }
-        builder.append(employment.get(empCount - 1).toString());
-        builder.append("]");
-        builder.append("}");
-        return builder.toString();
+        return accept(new AdmAppendVisitor()).toString();
+    }
+
+    public IAppendVisitor accept(IAppendVisitor visitor) {
+        visitor.append("{\"id\": ").visit(id);
+        visitor.append(", \"alias\": ").visit(alias);
+        visitor.append(", \"name\": ").visit(name);
+        visitor.append(", \"user_since\": ").visit(userSince);
+        visitor.append(", \"friend_ids\": ").visit(friendIds);
+        visitor.append(", \"employment\": ").visit(employment);
+        return visitor.append("}");
     }
 
     public void setId(long id) {
@@ -97,7 +80,7 @@ public class FacebookUser {
         this.name = name;
     }
 
-    public void setUserSince(String userSince) {
+    public void setUserSince(DateTime userSince) {
         this.userSince = userSince;
     }
 
@@ -105,18 +88,15 @@ public class FacebookUser {
         this.friendIds = friendIds;
     }
 
-    public void setEmployment(List<Employment> employment) {
+    public void setEmployment(Employments employment) {
         if (this.employment == null) {
-            this.employment = new ArrayList<Employment>();
+            this.employment = new Employments(employment.size());
         }
-        this.employment.clear();
-        for (Employment e : employment) {
-            this.employment.add(e);
-        }
+        this.employment.set(employment);
     }
 
-    public void reset(long id, String alias, String name, String userSince, long[] friendIds,
-            List<Employment> employment) {
+    public void reset(long id, String alias, String name, DateTime userSince, long[] friendIds,
+                      Employments employment) {
         this.id = id;
         this.alias = alias;
         this.name = name;

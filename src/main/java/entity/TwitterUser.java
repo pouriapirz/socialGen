@@ -1,5 +1,8 @@
 package entity;
 
+import socialGen.AdmAppendVisitor;
+import socialGen.IAppendVisitor;
+
 public class TwitterUser {
 
     private String screenName;
@@ -50,21 +53,16 @@ public class TwitterUser {
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("{");
-        builder.append("\"screen_name\":" + "\"" + screenName + "\"");
-        builder.append(",");
-        builder.append("\"lang\":" + "\"" + lang + "\"");
-        builder.append(",");
-        builder.append("\"friends_count\":" + friendsCount);
-        builder.append(",");
-        builder.append("\"statuses_count\":" + statusesCount);
-        builder.append(",");
-        builder.append("\"name\":" + "\"" + name + "\"");
-        builder.append(",");
-        builder.append("\"followers_count\":" + followersCount);
-        builder.append("}");
-        return builder.toString();
+        return accept(new AdmAppendVisitor()).toString();
     }
 
+    public IAppendVisitor accept(IAppendVisitor visitor) {
+        visitor.append("{\"screen_name\": ").visit(screenName);
+        visitor.append(", \"lang\": ").visit(lang);
+        visitor.append(", \"friends_count\": ").visit(friendsCount);
+        visitor.append(", \"statuses_count\": ").visit(statusesCount);
+        visitor.append(", \"name\": ").visit(name);
+        visitor.append(", \"followers_count\": ").visit(followersCount);
+        return visitor.append("}");
+    }
 }

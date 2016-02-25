@@ -1,15 +1,17 @@
 package socialGen;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Random;
 
+import utility.FileAppender;
+import utility.FileUtil;
 import conf.PartitionConfiguration;
 import datatype.Date;
 import datatype.DateTime;
 import datatype.Message;
 import datatype.Point;
 import entity.Employment;
+import entity.Employments;
 import entity.FacebookMessage;
 import entity.FacebookUser;
 import entity.TweetMessage;
@@ -20,8 +22,6 @@ import generator.RandomIdSelector;
 import generator.RandomLocationGenerator;
 import generator.RandomMessageGenerator;
 import generator.RandomNameGenerator;
-import utility.FileAppender;
-import utility.FileUtil;
 
 public class DataGenerator {
 
@@ -63,31 +63,33 @@ public class DataGenerator {
     private static FacebookMessage fbMessage = new FacebookMessage();
     private static TweetMessage twMessage = new TweetMessage();
 
-    private static void generateFacebookUsers(long numFacebookUsers) throws IOException {
-        FileAppender appender = FileUtil.getFileAppender(outputDir + "/" + "fb_users.adm", true, true);
-        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "fb_message.adm", true, true);
+    private static void generateFacebookUsers(long numFacebookUsers, IAppendVisitor visitor, String ext)
+            throws IOException {
+        FileAppender appender = FileUtil.getFileAppender(outputDir + "/" + "fb_users." + ext, true, true);
+        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "fb_message." + ext, true, true);
         for (int i = 0; i < numFacebookUsers; i++) {
             getFacebookUser(null);
-            appender.appendToFile(fbUser.toString());
+            appender.appendToFile(visitor.reset().visit(fbUser).toString());
             int numOfMsg = random.nextInt(2 * avgMsgPerFBU + 1);
-            generateFacebookMessages(fbUser, messageAppender, numOfMsg);
+            generateFacebookMessages(fbUser, messageAppender, numOfMsg, visitor);
         }
         appender.close();
         messageAppender.close();
     }
 
-    private static void generateTwitterUsers(long numTwitterUsers) throws IOException {
-        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "tw_message.adm", true, true);
+    private static void generateTwitterUsers(long numTwitterUsers, IAppendVisitor visitor, String ext)
+            throws IOException {
+        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "tw_message." + ext, true, true);
         for (int i = 0; i < numTwitterUsers; i++) {
             getTwitterUser(null);
             int numOfTweets = random.nextInt(2 * avgTweetPerTWU + 1);
-            generateTwitterMessages(twUser, messageAppender, numOfTweets);
+            generateTwitterMessages(twUser, messageAppender, numOfTweets, visitor);
         }
         messageAppender.close();
     }
 
-    private static void generateFacebookMessages(FacebookUser user, FileAppender appender, int numMsg)
-            throws IOException {
+    private static void generateFacebookMessages(FacebookUser user, FileAppender appender, int numMsg,
+            IAppendVisitor visitor) throws IOException {
         Message message;
         for (int i = 0; i < numMsg; i++) {
             message = randMessageGen.getNextRandomMessage(false);
@@ -95,12 +97,12 @@ public class DataGenerator {
             DateTime sendTime = randDateGen.getNextRandomDatetime();
             fbMessage.reset(fbMessageId++, user.getId(), generateRandomLong(1, (numOfFBUsers * avgMsgPerFBU)), location,
                     sendTime, message);
-            appender.appendToFile(fbMessage.toString());
+            appender.appendToFile(visitor.reset().visit(fbMessage).toString());
         }
     }
 
-    private static void generateTwitterMessages(TwitterUser user, FileAppender appender, long numMsg)
-            throws IOException {
+    private static void generateTwitterMessages(TwitterUser user, FileAppender appender, long numMsg,
+            IAppendVisitor visitor) throws IOException {
         Message message;
         for (int i = 0; i < numMsg; i++) {
             message = randMessageGen.getNextRandomMessage(true);
@@ -108,21 +110,36 @@ public class DataGenerator {
             DateTime sendTime = randDateGen.getNextRandomDatetime();
             twMessage.reset(twMessageId, user, location, sendTime, message.getReferredTopics(), message);
             twMessageId++;
-            appender.appendToFile(twMessage.toString());
+            appender.appendToFile(visitor.reset().visit(twMessage).toString());
         }
     }
 
     public static void main(String args[]) throws Exception {
         String controllerInstallDir = null;
         if (args.length < 2) {
+            System.out.println(" Error: Invalid number of arguments ");
             printUsage();
             System.exit(1);
-        } else {
-            controllerInstallDir = args[0];
-            String partitionConfXML = controllerInstallDir + "/output/partition-conf.xml";
-            String partitionName = args[1];
-            partition = XMLUtil.getPartitionConfiguration(partitionConfXML, partitionName);
         }
+        int i = 0;
+        boolean jsonOutput = false;
+        while (args[i].startsWith("-")) {
+            final String option = args[i];
+            if (option.equals("-j")) {
+                jsonOutput = true;
+            } else if (option.equals("-a")) {
+                jsonOutput = false;
+            } else {
+                System.out.println(" Error: Illegal opion " + option);
+                printUsage();
+                System.exit(1);
+            }
+            ++i;
+        }
+        controllerInstallDir = args[i++];
+        String partitionConfXML = controllerInstallDir + "/output/partition-conf.xml";
+        String partitionName = args[i];
+        partition = XMLUtil.getPartitionConfiguration(partitionConfXML, partitionName);
 
         randDateGen = new RandomDateGenerator(new Date(START_MONTH, START_DAY, START_YEAR),
                 new Date(END_MONTH, END_DAY, END_YEAR));
@@ -149,17 +166,20 @@ public class DataGenerator {
         twMessageId = partition.getTargetPartition().getTwMessageIdMin();
         outputDir = partition.getSourcePartition().getPath();
 
-        generateData();
+        IAppendVisitor visitor = jsonOutput ? new JsonAppendVisitor() : new AdmAppendVisitor();
+        String extension = jsonOutput ? "json" : "adm";
+        generateData(visitor, extension);
     }
 
     private static void printUsage() {
-        System.out.println(" Error: Invalid number of arguments ");
-        System.out.println(" Usage :" + " DataGenerator <path to configuration file> <partition name> ");
+        System.out.println("Usage : DataGenerator [-j|-a] <path to configuration file> <partition name> ");
+        System.out.println("        -j : JSON output");
+        System.out.println("        -a : ADM output");
     }
 
-    private static void generateData() throws IOException {
-        generateFacebookUsers(numOfFBUsers);
-        generateTwitterUsers(numOfTWUsers);
+    private static void generateData(IAppendVisitor visitor, String extension) throws IOException {
+        generateFacebookUsers(numOfFBUsers, visitor, extension);
+        generateTwitterUsers(numOfTWUsers, visitor, extension);
         System.out.println("\nData generation in partition :" + partition.getTargetPartition().getName() + " finished");
     }
 
@@ -172,11 +192,11 @@ public class DataGenerator {
         }
         long id = fbUserId++;
         String alias = getUniqueAlias(nameComponents[0], id, MAX_DIGIT);
-        String userSince = randDateGen.getNextRandomDatetime().toString();
+        DateTime userSince = randDateGen.getNextRandomDatetime();
         int numFriends = random.nextInt(11);
         long[] friendIds = RandomIdSelector.getKFromN(numFriends, (numOfFBUsers));
         int empCount = 1 + random.nextInt(3);
-        ArrayList<Employment> emp = new ArrayList<Employment>(empCount);
+        Employments emp = new Employments(empCount);
         for (int i = 0; i < empCount; i++) {
             Employment e = randEmpGen.getRandomEmployment();
             emp.add(new Employment(e.getOrganization(), e.getStartDate(), e.getEndDate()));
