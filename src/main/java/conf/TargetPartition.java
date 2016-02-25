@@ -4,79 +4,33 @@ public class TargetPartition {
     private final String name;
     private final String host;
     private final String path;
-    private final long fbUserKeyMin;
-    private final long fbUserKeyMax;
-    private final long twUserKeyMin;
-    private final long twUserKeyMax;
-    private final long fbMessageIdMin;
-    private final long fbMessageIdMax;
-    private final long twMessageIdMin;
-    private final long twMessageIdMax;
-    private final int avgMsgPerFBU;
-    private final int avgTweetPerTWU;
+    private final long gBookUserKeyMin;
+    private final long gBookUserKeyMax;
+    private final long chirpUserKeyMin;
+    private final long chirpUserKeyMax;
+    private final long gBookMsgIdMin;
+    private final long gBookMsgIdMax;
+    private final long chirpMsgIdMin;
+    private final long chirpMsgIdMax;
+    private final int avgMsgPerGBookUser;
+    private final int avgMsgPerChirpUser;
 
-    public TargetPartition(String partitionName, String host, String path, long fbUserKeyMin, long fbUserKeyMax,
-            long twUserKeyMin, long twUserKeyMax, long fbMessageIdMin, long fbMessageIdMax, long twMessageIdMin,
-            long twMessageIdMax, int avgMsgPerFBU, int avgTweetPerTWU) {
+    public TargetPartition(String partitionName, String host, String path, long gBookUserKeyMin, long gBookUserKeyMax,
+            long chirpUserKeyMin, long chirpUserKeyMax, long gBookMsgIdMin, long gBookMsgIdMax, long chirpMsgIdMin,
+            long chirpMsgIdMax, int avgMsgPerGBookUser, int avgChirpMsgPerUser) {
         this.name = partitionName;
         this.host = host;
         this.path = path;
-        this.fbUserKeyMin = fbUserKeyMin;
-        this.fbUserKeyMax = fbUserKeyMax;
-        this.twUserKeyMin = twUserKeyMin;
-        this.twUserKeyMax = twUserKeyMax;
-        this.twMessageIdMin = twMessageIdMin;
-        this.twMessageIdMax = twMessageIdMax;
-        this.fbMessageIdMin = fbMessageIdMin;
-        this.fbMessageIdMax = fbMessageIdMax;
-        this.avgMsgPerFBU = avgMsgPerFBU;
-        this.avgTweetPerTWU = avgTweetPerTWU;
-    }
-
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(name);
-        builder.append(" ");
-        builder.append(host);
-        builder.append("\n");
-        builder.append(path);
-        builder.append("\n");
-        builder.append("fbUser:key:min");
-        builder.append(fbUserKeyMin);
-
-        builder.append("\n");
-        builder.append("fbUser:key:max");
-        builder.append(fbUserKeyMax);
-
-        builder.append("\n");
-        builder.append("twUser:key:min");
-        builder.append(twUserKeyMin);
-
-        builder.append("\n");
-        builder.append("twUser:key:max");
-        builder.append(twUserKeyMax);
-
-        builder.append("\n");
-        builder.append("fbMessage:key:min");
-        builder.append(fbMessageIdMin);
-
-        builder.append("\n");
-        builder.append("fbMessage:key:max");
-        builder.append(fbMessageIdMax);
-
-        builder.append("\n");
-        builder.append("twMessage:key:min");
-        builder.append(twMessageIdMin);
-
-        builder.append("\n");
-        builder.append("twMessage:key:max");
-        builder.append(twMessageIdMax);
-
-        builder.append("\n");
-        builder.append("twMessage:key:max");
-        builder.append(twMessageIdMax);
-
-        return new String(builder);
+        this.gBookUserKeyMin = gBookUserKeyMin;
+        this.gBookUserKeyMax = gBookUserKeyMax;
+        this.chirpUserKeyMin = chirpUserKeyMin;
+        this.chirpUserKeyMax = chirpUserKeyMax;
+        this.chirpMsgIdMin = chirpMsgIdMin;
+        this.chirpMsgIdMax = chirpMsgIdMax;
+        this.gBookMsgIdMin = gBookMsgIdMin;
+        this.gBookMsgIdMax = gBookMsgIdMax;
+        this.avgMsgPerGBookUser = avgMsgPerGBookUser;
+        this.avgMsgPerChirpUser = avgChirpMsgPerUser;
     }
 
     public String getName() {
@@ -87,44 +41,44 @@ public class TargetPartition {
         return host;
     }
 
-    public long getFbUserKeyMin() {
-        return fbUserKeyMin;
+    public long getgBookUserKeyMin() {
+        return gBookUserKeyMin;
     }
 
-    public long getFbUserKeyMax() {
-        return fbUserKeyMax;
+    public long getgBookUserKeyMax() {
+        return gBookUserKeyMax;
     }
 
-    public long getTwUserKeyMin() {
-        return twUserKeyMin;
+    public long getChirpUserKeyMin() {
+        return chirpUserKeyMin;
     }
 
-    public long getTwUserKeyMax() {
-        return twUserKeyMax;
+    public long getChirpUserKeyMax() {
+        return chirpUserKeyMax;
     }
 
-    public long getFbMessageIdMin() {
-        return fbMessageIdMin;
+    public long getGBookMsgIdMin() {
+        return gBookMsgIdMin;
     }
 
-    public long getFbMessageIdMax() {
-        return fbMessageIdMax;
+    public long getGBookMsgIdMax() {
+        return gBookMsgIdMax;
     }
 
-    public long getTwMessageIdMin() {
-        return twMessageIdMin;
+    public long getChirpMsgIdMin() {
+        return chirpMsgIdMin;
     }
 
-    public long getTwMessageIdMax() {
-        return twMessageIdMax;
+    public long getChirpMsgIdMax() {
+        return chirpMsgIdMax;
     }
 
-    public int getAvgMsgPerFBU() {
-        return avgMsgPerFBU;
+    public int getAvgMsgPerGBookUser() {
+        return avgMsgPerGBookUser;
     }
 
-    public int getAvgTweetPerTWU() {
-        return avgTweetPerTWU;
+    public int getAvgMsgPerChirpUser() {
+        return avgMsgPerChirpUser;
     }
 
     public String getPath() {

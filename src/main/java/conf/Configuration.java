@@ -5,37 +5,37 @@ import java.util.List;
 
 public class Configuration {
 
-    private final long numOfFBU;
-    private final long numOfTWU;
-    private final int avgMsgPerFBU;
-    private final int avgTweetPerTWU;
+    private final long numOfGBookUsers;
+    private final long numOfChirpUsers;
+    private final int avgMsgPerGBookUser;
+    private final int avgMsgPerChirpUser;
 
     private final List<SourcePartition> sourcePartitions;
     private List<TargetPartition> targetPartitions;
 
-    public Configuration(long numOfFBU, long numOfTWU, int avgMsgFBU, int avgMsgTWU, List<SourcePartition> partitions)
+    public Configuration(long numOfGBookUsers, long numOfChirpUsers, int avgMsgGBookUser, int avgMsgChirpUser, List<SourcePartition> partitions)
             throws IOException {
-        this.numOfFBU = numOfFBU;
-        this.numOfTWU = numOfTWU;
-        this.avgMsgPerFBU = avgMsgFBU;
-        this.avgTweetPerTWU = avgMsgTWU;
+        this.numOfGBookUsers = numOfGBookUsers;
+        this.numOfChirpUsers = numOfChirpUsers;
+        this.avgMsgPerGBookUser = avgMsgGBookUser;
+        this.avgMsgPerChirpUser = avgMsgChirpUser;
         this.sourcePartitions = partitions;
     }
 
-    public long getNumOfFBU() {
-        return numOfFBU;
+    public long getNumOfGBookUsers() {
+        return numOfGBookUsers;
     }
 
-    public long getNumOfTWU() {
-        return numOfTWU;
+    public long getNumOfChirpUsers() {
+        return numOfChirpUsers;
     }
 
-    public int getAvgMsgPerFBU() {
-        return avgMsgPerFBU;
+    public int getAvgMsgGBookUser() {
+        return avgMsgPerGBookUser;
     }
 
-    public int getAvgTweetPerTWU() {
-        return avgTweetPerTWU;
+    public int getAvgMsgChirpUser() {
+        return avgMsgPerChirpUser;
     }
 
     public List<SourcePartition> getSourcePartitions() {

@@ -30,6 +30,24 @@ import conf.TargetPartition;
 
 public class XMLUtil {
 
+    final static String PARTITIONS = "partitions";
+    final static String PARTITION = "partition";
+    final static String NAME = "name";
+    final static String HOST = "host";
+    final static String PATH = "path";
+    final static String GBOOK_USERS = "gleambook.users.count";
+    final static String CHIRP_USERS = "chirp.users.count";
+    final static String GBOOK_USER_KEY_MIN = "gbook.users.key.min";
+    final static String GBOOK_USER_KEY_MAX = "gbook.users.key.max";
+    final static String CHIRP_USER_KEY_MIN = "chirp.users.key.min";
+    final static String CHIRP_USER_KEY_MAX = "chirp.users.key.max";
+    final static String GBOOK_MSG_KEY_MIN = "gbook.messages.key.min";
+    final static String GBOOK_MSG_KEY_MAX = "gbook.messages.key.max";
+    final static String CHIRP_MSG_KEY_MIN = "chirp.messages.key.min";
+    final static String CHIRP_MSG_KEY_MAX = "chirp.messages.key.max";
+    final static String AVG_MSG_PER_GBOOK_USER = "avg.message.count.per.gleambook.user";
+    final static String AVG_MSG_PER_CHIRP_USER = "avg.message.count.per.chirp.user";
+
     public static void writeToXML(Configuration conf, String filePath)
             throws IOException, ParserConfigurationException, TransformerException {
 
@@ -38,7 +56,7 @@ public class XMLUtil {
 
         // root elements
         Document doc = docBuilder.newDocument();
-        Element rootElement = doc.createElement("Partitions");
+        Element rootElement = doc.createElement(PARTITIONS);
         doc.appendChild(rootElement);
 
         int index = 0;
@@ -81,8 +99,8 @@ public class XMLUtil {
 
     public static Configuration getConfiguration(String filePath) throws Exception {
         Configuration conf = getConfiguration(getDocument(filePath));
-        PartitionMetrics metrics = new PartitionMetrics(conf.getNumOfFBU(), conf.getNumOfTWU(), conf.getAvgMsgPerFBU(),
-                conf.getAvgTweetPerTWU(), conf.getSourcePartitions().size());
+        PartitionMetrics metrics = new PartitionMetrics(conf.getNumOfGBookUsers(), conf.getNumOfChirpUsers(),
+                conf.getAvgMsgGBookUser(), conf.getAvgMsgChirpUser(), conf.getSourcePartitions().size());
         List<TargetPartition> targetPartitions = getTargetPartitions(metrics, conf.getSourcePartitions());
         conf.setTargetPartitions(targetPartitions);
         return conf;
@@ -91,18 +109,19 @@ public class XMLUtil {
     private static Configuration getConfiguration(Document document) throws IOException {
         Element rootEle = document.getDocumentElement();
         NodeList nodeList = rootEle.getChildNodes();
-        long fbuCount = Long.parseLong(getStringValue((Element) nodeList, "facebookUsers"));
-        long twuCount = Long.parseLong(getStringValue((Element) nodeList, "twitterUsers"));
-        int avgMsgFBU = Integer.parseInt(getStringValue((Element) nodeList, "avgMsg"));
-        int avgTweetTWU = Integer.parseInt(getStringValue((Element) nodeList, "avgTweet"));
+        long gBookUserCount = Long.parseLong(getStringValue((Element) nodeList, GBOOK_USERS));
+        long chirpUserCount = Long.parseLong(getStringValue((Element) nodeList, CHIRP_USERS));
+        int avgMsgPerGBookUser = Integer.parseInt(getStringValue((Element) nodeList, AVG_MSG_PER_GBOOK_USER));
+        int avgMsgPerChirpUser = Integer.parseInt(getStringValue((Element) nodeList, AVG_MSG_PER_CHIRP_USER));
 
         List<SourcePartition> sourcePartitions = getSourcePartitions(document);
-        return new Configuration(fbuCount, twuCount, avgMsgFBU, avgTweetTWU, sourcePartitions);
+        return new Configuration(gBookUserCount, chirpUserCount, avgMsgPerGBookUser, avgMsgPerChirpUser,
+                sourcePartitions);
     }
 
     private static List<SourcePartition> getSourcePartitions(Document document) {
         Element rootEle = document.getDocumentElement();
-        NodeList nodeList = rootEle.getElementsByTagName("partition");
+        NodeList nodeList = rootEle.getElementsByTagName(PARTITION);
         List<SourcePartition> sourcePartitions = new ArrayList<SourcePartition>();
         for (int i = 0; i < nodeList.getLength(); i++) {
             Node node = nodeList.item(i);
@@ -112,9 +131,9 @@ public class XMLUtil {
     }
 
     private static SourcePartition getSourcePartition(Element functionElement) {
-        String name = getStringValue(functionElement, "name");
-        String host = getStringValue(functionElement, "host");
-        String path = getStringValue(functionElement, "path");
+        String name = getStringValue(functionElement, NAME);
+        String host = getStringValue(functionElement, HOST);
+        String path = getStringValue(functionElement, PATH);
         SourcePartition sp = new SourcePartition(name, host, path);
         return sp;
     }
@@ -139,36 +158,36 @@ public class XMLUtil {
             throws IOException {
 
         Element rootEle = document.getDocumentElement();
-        NodeList nodeList = rootEle.getElementsByTagName("Partition");
+        NodeList nodeList = rootEle.getElementsByTagName(PARTITION);
 
         for (int i = 0; i < nodeList.getLength(); i++) {
             Node node = nodeList.item(i);
             Element nodeElement = (Element) node;
-            String name = getStringValue(nodeElement, "name");
+            String name = getStringValue(nodeElement, NAME);
             if (!name.equalsIgnoreCase(partitionName)) {
                 continue;
             }
-            String host = getStringValue(nodeElement, "host");
-            String path = getStringValue(nodeElement, "path");
+            String host = getStringValue(nodeElement, HOST);
+            String path = getStringValue(nodeElement, PATH);
 
-            String fbUserKeyMin = getStringValue(nodeElement, "fbUserKeyMin");
-            String fbUserKeyMax = getStringValue(nodeElement, "fbUserKeyMax");
-            String twUserKeyMin = getStringValue(nodeElement, "twUserKeyMin");
-            String twUserKeyMax = getStringValue(nodeElement, "twUserKeyMax");
-            String fbMessageKeyMin = getStringValue(nodeElement, "fbMessageKeyMin");
-
-            String fbMessageKeyMax = getStringValue(nodeElement, "fbMessageKeyMax");
-            String twMessageKeyMin = getStringValue(nodeElement, "twMessageKeyMin");
-            String twMessageKeyMax = getStringValue(nodeElement, "twMessageKeyMax");
-            String avgMsgPerFBU = getStringValue(nodeElement, "avgMsgPerFBU");
-            String avgTweetPerTWU = getStringValue(nodeElement, "avgTweetPerTWU");
+            String gBookUserKeyMin = getStringValue(nodeElement, GBOOK_USER_KEY_MIN);
+            String gBUserKeyMax = getStringValue(nodeElement, GBOOK_USER_KEY_MAX);
+            String chirpUserKeyMin = getStringValue(nodeElement, CHIRP_USER_KEY_MIN);
+            String chirpUserKeyMax = getStringValue(nodeElement, CHIRP_USER_KEY_MAX);
+            String gBookMsgKeyMin = getStringValue(nodeElement, GBOOK_MSG_KEY_MIN);
+            String gBookMsgKeyMax = getStringValue(nodeElement, GBOOK_MSG_KEY_MAX);
+            String chirpMsgKeyMin = getStringValue(nodeElement, CHIRP_MSG_KEY_MIN);
+            String chirpMsgKeyMax = getStringValue(nodeElement, CHIRP_MSG_KEY_MAX);
+            String avgMsgPerGBookUser = getStringValue(nodeElement, AVG_MSG_PER_GBOOK_USER);
+            String avgMsgPerChirpUser = getStringValue(nodeElement, AVG_MSG_PER_CHIRP_USER);
 
             SourcePartition sp = new SourcePartition(name, host, path);
 
-            TargetPartition tp = new TargetPartition(partitionName, host, path, Long.parseLong(fbUserKeyMin),
-                    Long.parseLong(fbUserKeyMax), Long.parseLong(twUserKeyMin), Long.parseLong(twUserKeyMax),
-                    Long.parseLong(fbMessageKeyMin), Long.parseLong(fbMessageKeyMax), Long.parseLong(twMessageKeyMin),
-                    Long.parseLong(twMessageKeyMax), Integer.parseInt(avgMsgPerFBU), Integer.parseInt(avgTweetPerTWU));
+            TargetPartition tp = new TargetPartition(partitionName, host, path, Long.parseLong(gBookUserKeyMin),
+                    Long.parseLong(gBUserKeyMax), Long.parseLong(chirpUserKeyMin), Long.parseLong(chirpUserKeyMax),
+                    Long.parseLong(gBookMsgKeyMin), Long.parseLong(gBookMsgKeyMax), Long.parseLong(chirpMsgKeyMin),
+                    Long.parseLong(chirpMsgKeyMax), Integer.parseInt(avgMsgPerGBookUser),
+                    Integer.parseInt(avgMsgPerChirpUser));
             PartitionConfiguration pc = new PartitionConfiguration(sp, tp);
             return pc;
         }
@@ -178,33 +197,33 @@ public class XMLUtil {
     private static List<TargetPartition> getTargetPartitions(PartitionMetrics metrics,
             List<SourcePartition> sourcePartitions) {
         List<TargetPartition> partitions = new ArrayList<TargetPartition>();
-        long fbUserKeyMin = 1;
-        long twUserKeyMin = 1;
-        long fbMessageIdMin = 1;
-        long twMessageIdMin = 1;
+        long gBookUserKeyMin = 1;
+        long chirpUserKeyMin = 1;
+        long gBookMsgIdMin = 1;
+        long chirpMsgIdMin = 1;
 
-        int avgMsgPerFBU = metrics.getAvgMsgPerFBU();
-        int avgTweetPerTWU = metrics.getAvgTweetPerTWU();
+        int avgMsgPerGBookUser = metrics.getAvgMsgPerGBookUser();
+        int avgMsgPerChirpUser = metrics.getAvgMsgPerChirpUser();
 
         for (SourcePartition sp : sourcePartitions) {
-            long fbUserKeyMax = fbUserKeyMin + metrics.getNumOfFBU() - 1;
-            long twUserKeyMax = twUserKeyMin + metrics.getNumOfTWU() - 1;
+            long gBookUserKeyMax = gBookUserKeyMin + metrics.getNumOfGBookUsers() - 1;
+            long chirpUserKeyMax = chirpUserKeyMin + metrics.getNumOfChirpUsers() - 1;
 
-            long maxPossibleMsgs = metrics.getNumOfFBU() * (2 * avgMsgPerFBU); //worst case (every user gets exactly double of average messages)
-            long maxPossibleTweets = metrics.getNumOfTWU() * (2 * avgTweetPerTWU); //same as above (worst case assumption)
+            long maxPossibleGBookMsgs = metrics.getNumOfGBookUsers() * (2 * avgMsgPerGBookUser); //worst case (every user gets exactly double of average messages)
+            long maxPossibleChirpMsgs = metrics.getNumOfChirpUsers() * (2 * avgMsgPerChirpUser); //same as above (worst case assumption)
 
-            long fbMessageIdMax = fbMessageIdMin + maxPossibleMsgs - 1;
-            long twMessageIdMax = twMessageIdMin + maxPossibleTweets - 1;
-            TargetPartition pe = new TargetPartition(sp.getName(), sp.getHost(), sp.getPath(), fbUserKeyMin,
-                    fbUserKeyMax, twUserKeyMin, twUserKeyMax, fbMessageIdMin, fbMessageIdMax, twMessageIdMin,
-                    twMessageIdMax, avgMsgPerFBU, avgTweetPerTWU);
+            long gBookMsgIdMax = gBookMsgIdMin + maxPossibleGBookMsgs - 1;
+            long chirpMsgIdMax = chirpMsgIdMin + maxPossibleChirpMsgs - 1;
+            TargetPartition pe = new TargetPartition(sp.getName(), sp.getHost(), sp.getPath(), gBookUserKeyMin,
+                    gBookUserKeyMax, chirpUserKeyMin, chirpUserKeyMax, gBookMsgIdMin, gBookMsgIdMax, chirpMsgIdMin,
+                    chirpMsgIdMax, avgMsgPerGBookUser, avgMsgPerChirpUser);
             partitions.add(pe);
 
-            fbUserKeyMin = fbUserKeyMax + 1;
-            twUserKeyMin = twUserKeyMax + 1;
+            gBookUserKeyMin = gBookUserKeyMax + 1;
+            chirpUserKeyMin = chirpUserKeyMax + 1;
 
-            fbMessageIdMin = fbMessageIdMax + 1;
-            twMessageIdMin = twMessageIdMax + 1;
+            gBookMsgIdMin = gBookMsgIdMax + 1;
+            chirpMsgIdMin = chirpMsgIdMax + 1;
         }
 
         return partitions;
@@ -212,72 +231,61 @@ public class XMLUtil {
 
     private static void writePartitionElement(SourcePartition sourcePartition, TargetPartition partition,
             Element rootElement, Document doc) {
-        // staff elements
-        Element pe = doc.createElement("Partition");
+
+        Element pe = doc.createElement(PARTITION);
         rootElement.appendChild(pe);
 
-        // name element
-        Element name = doc.createElement("name");
+        Element name = doc.createElement(NAME);
         name.appendChild(doc.createTextNode("" + partition.getName()));
         pe.appendChild(name);
 
-        // host element
-        Element host = doc.createElement("host");
+        Element host = doc.createElement(HOST);
         host.appendChild(doc.createTextNode("" + partition.getHost()));
         pe.appendChild(host);
 
-        // path element
-        Element path = doc.createElement("path");
+        Element path = doc.createElement(PATH);
         path.appendChild(doc.createTextNode("" + partition.getPath()));
         pe.appendChild(path);
 
-        // fbUserKeyMin element
-        Element fbUserKeyMin = doc.createElement("fbUserKeyMin");
-        fbUserKeyMin.appendChild(doc.createTextNode("" + partition.getFbUserKeyMin()));
-        pe.appendChild(fbUserKeyMin);
+        Element gBookUserKeyMin = doc.createElement(GBOOK_USER_KEY_MIN);
+        gBookUserKeyMin.appendChild(doc.createTextNode("" + partition.getgBookUserKeyMin()));
+        pe.appendChild(gBookUserKeyMin);
 
-        // fbUserKeyMax element
-        Element fbUserKeyMax = doc.createElement("fbUserKeyMax");
-        fbUserKeyMax.appendChild(doc.createTextNode("" + partition.getFbUserKeyMax()));
-        pe.appendChild(fbUserKeyMax);
+        Element gBookUserKeyMax = doc.createElement(GBOOK_USER_KEY_MAX);
+        gBookUserKeyMax.appendChild(doc.createTextNode("" + partition.getgBookUserKeyMax()));
+        pe.appendChild(gBookUserKeyMax);
 
-        // twUserKeyMin element
-        Element twUserKeyMin = doc.createElement("twUserKeyMin");
-        twUserKeyMin.appendChild(doc.createTextNode("" + partition.getTwUserKeyMin()));
-        pe.appendChild(twUserKeyMin);
+        Element chirpUserKeyMin = doc.createElement(CHIRP_USER_KEY_MIN);
+        chirpUserKeyMin.appendChild(doc.createTextNode("" + partition.getChirpUserKeyMin()));
+        pe.appendChild(chirpUserKeyMin);
 
-        // twUserKeyMax element
-        Element twUserKeyMax = doc.createElement("twUserKeyMax");
-        twUserKeyMax.appendChild(doc.createTextNode("" + partition.getTwUserKeyMax()));
-        pe.appendChild(twUserKeyMax);
+        Element chirpUserKeyMax = doc.createElement(CHIRP_USER_KEY_MAX);
+        chirpUserKeyMax.appendChild(doc.createTextNode("" + partition.getChirpUserKeyMax()));
+        pe.appendChild(chirpUserKeyMax);
 
-        // fbMessgeKeyMin element
-        Element fbMessageKeyMin = doc.createElement("fbMessageKeyMin");
-        fbMessageKeyMin.appendChild(doc.createTextNode("" + partition.getFbMessageIdMin()));
-        pe.appendChild(fbMessageKeyMin);
+        Element gBookMsgKeyMin = doc.createElement(GBOOK_MSG_KEY_MIN);
+        gBookMsgKeyMin.appendChild(doc.createTextNode("" + partition.getGBookMsgIdMin()));
+        pe.appendChild(gBookMsgKeyMin);
 
-        // fbMessgeKeyMin element
-        Element fbMessageKeyMax = doc.createElement("fbMessageKeyMax");
-        fbMessageKeyMax.appendChild(doc.createTextNode("" + partition.getFbMessageIdMax()));
-        pe.appendChild(fbMessageKeyMax);
+        Element gBookMsgKeyMax = doc.createElement(GBOOK_MSG_KEY_MAX);
+        gBookMsgKeyMax.appendChild(doc.createTextNode("" + partition.getGBookMsgIdMax()));
+        pe.appendChild(gBookMsgKeyMax);
 
-        // twMessgeKeyMin element
-        Element twMessageKeyMin = doc.createElement("twMessageKeyMin");
-        twMessageKeyMin.appendChild(doc.createTextNode("" + partition.getTwMessageIdMin()));
-        pe.appendChild(twMessageKeyMin);
+        Element chirpMsgKeyMin = doc.createElement(CHIRP_MSG_KEY_MIN);
+        chirpMsgKeyMin.appendChild(doc.createTextNode("" + partition.getChirpMsgIdMin()));
+        pe.appendChild(chirpMsgKeyMin);
 
-        // twMessgeKeyMin element
-        Element twMessageKeyMax = doc.createElement("twMessageKeyMax");
-        twMessageKeyMax.appendChild(doc.createTextNode("" + partition.getTwMessageIdMax()));
-        pe.appendChild(twMessageKeyMax);
+        Element chirpMsgKeyMax = doc.createElement(CHIRP_MSG_KEY_MAX);
+        chirpMsgKeyMax.appendChild(doc.createTextNode("" + partition.getChirpMsgIdMax()));
+        pe.appendChild(chirpMsgKeyMax);
 
-        Element avgMsg = doc.createElement("avgMsgPerFBU");
-        avgMsg.appendChild(doc.createTextNode("" + partition.getAvgMsgPerFBU()));
-        pe.appendChild(avgMsg);
+        Element avgMsgPerGBookUser = doc.createElement(AVG_MSG_PER_GBOOK_USER);
+        avgMsgPerGBookUser.appendChild(doc.createTextNode("" + partition.getAvgMsgPerGBookUser()));
+        pe.appendChild(avgMsgPerGBookUser);
 
-        Element avgTweet = doc.createElement("avgTweetPerTWU");
-        avgTweet.appendChild(doc.createTextNode("" + partition.getAvgTweetPerTWU()));
-        pe.appendChild(avgTweet);
+        Element avgMsgPerChirpUser = doc.createElement(AVG_MSG_PER_CHIRP_USER);
+        avgMsgPerChirpUser.appendChild(doc.createTextNode("" + partition.getAvgMsgPerChirpUser()));
+        pe.appendChild(avgMsgPerChirpUser);
 
     }
 }

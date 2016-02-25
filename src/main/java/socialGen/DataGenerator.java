@@ -9,11 +9,11 @@ import datatype.Date;
 import datatype.DateTime;
 import datatype.Message;
 import datatype.Point;
+import entity.ChirpMessage;
+import entity.ChirpUser;
 import entity.Employment;
-import entity.FacebookMessage;
-import entity.FacebookUser;
-import entity.TweetMessage;
-import entity.TwitterUser;
+import entity.GleambookMessage;
+import entity.GleambookUser;
 import generator.RandomDateGenerator;
 import generator.RandomEmploymentGenerator;
 import generator.RandomIdSelector;
@@ -46,69 +46,68 @@ public class DataGenerator {
     private static RandomEmploymentGenerator randEmpGen;
     private static RandomMessageGenerator randMessageGen;
     private static RandomLocationGenerator randLocationGen;
-    private static long numOfFBUsers;
-    private static long numOfTWUsers;
-    private static int avgMsgPerFBU;
-    private static int avgTweetPerTWU;
-    private static long fbUserId;
-    private static long fbMessageId;
-    private static long twMessageId;
+    private static long numOfGBookUsers;
+    private static long numOfChirpUsers;
+    private static int avgMsgPerGBookUser;
+    private static int avgMsgPerChirpUser;
+    private static long gBookUserId;
+    private static long gBookMsgId;
+    private static long chirpMsgId;
 
     private static Random random = new Random(System.currentTimeMillis());
     private static String outputDir;
     private static PartitionConfiguration partition;
 
-    private static FacebookUser fbUser = new FacebookUser();
-    private static TwitterUser twUser = new TwitterUser();
-    private static FacebookMessage fbMessage = new FacebookMessage();
-    private static TweetMessage twMessage = new TweetMessage();
+    private static GleambookUser gBookUser = new GleambookUser();
+    private static ChirpUser chirpUser = new ChirpUser();
+    private static GleambookMessage gBookMessage = new GleambookMessage();
+    private static ChirpMessage chirpMessage = new ChirpMessage();
 
-    private static void generateFacebookUsers(long numFacebookUsers) throws IOException {
-        FileAppender appender = FileUtil.getFileAppender(outputDir + "/" + "fb_users.adm", true, true);
-        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "fb_message.adm", true, true);
-        for (int i = 0; i < numFacebookUsers; i++) {
-            getFacebookUser(null);
-            appender.appendToFile(fbUser.toString());
-            int numOfMsg = random.nextInt(2 * avgMsgPerFBU + 1);
-            generateFacebookMessages(fbUser, messageAppender, numOfMsg);
+    private static void generateGbookUsers(long numGBookUsers) throws IOException {
+        FileAppender appender = FileUtil.getFileAppender(outputDir + "/" + "gbook_users.adm", true, true);
+        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "gbook_messages.adm", true, true);
+        for (long i = 0; i < numGBookUsers; i++) {
+            generateGBookUser(null);
+            appender.appendToFile(gBookUser.toString());
+            int numOfMsg = random.nextInt(2 * avgMsgPerGBookUser + 1);
+            generateGBookMessages(gBookUser, messageAppender, numOfMsg);
         }
         appender.close();
         messageAppender.close();
     }
 
-    private static void generateTwitterUsers(long numTwitterUsers) throws IOException {
-        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "tw_message.adm", true, true);
-        for (int i = 0; i < numTwitterUsers; i++) {
-            getTwitterUser(null);
-            int numOfTweets = random.nextInt(2 * avgTweetPerTWU + 1);
-            generateTwitterMessages(twUser, messageAppender, numOfTweets);
+    private static void generateChirpUsers(long numChirpUsers) throws IOException {
+        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "chirp_messages.adm", true, true);
+        for (long i = 0; i < numChirpUsers; i++) {
+            generateChirpUser(null);
+            int numOfMsg = random.nextInt(2 * avgMsgPerChirpUser + 1);
+            generateChirpMessages(chirpUser, messageAppender, numOfMsg);
         }
         messageAppender.close();
     }
 
-    private static void generateFacebookMessages(FacebookUser user, FileAppender appender, int numMsg)
+    private static void generateGBookMessages(GleambookUser user, FileAppender appender, int numMsg)
             throws IOException {
         Message message;
         for (int i = 0; i < numMsg; i++) {
             message = randMessageGen.getNextRandomMessage(false);
             Point location = randLocationGen.getRandomPoint();
             DateTime sendTime = randDateGen.getNextRandomDatetime();
-            fbMessage.reset(fbMessageId++, user.getId(), generateRandomLong(1, (numOfFBUsers * avgMsgPerFBU)), location,
-                    sendTime, message);
-            appender.appendToFile(fbMessage.toString());
+            gBookMessage.reset(gBookMsgId++, user.getId(),
+                    generateRandomLong(1, (numOfGBookUsers * avgMsgPerGBookUser)), location, sendTime, message);
+            appender.appendToFile(gBookMessage.toString());
         }
     }
 
-    private static void generateTwitterMessages(TwitterUser user, FileAppender appender, long numMsg)
-            throws IOException {
+    private static void generateChirpMessages(ChirpUser user, FileAppender appender, long numMsg) throws IOException {
         Message message;
         for (int i = 0; i < numMsg; i++) {
             message = randMessageGen.getNextRandomMessage(true);
             Point location = randLocationGen.getRandomPoint();
             DateTime sendTime = randDateGen.getNextRandomDatetime();
-            twMessage.reset(twMessageId, user, location, sendTime, message.getReferredTopics(), message);
-            twMessageId++;
-            appender.appendToFile(twMessage.toString());
+            chirpMessage.reset(chirpMsgId, user, location, sendTime, message.getReferredTopics(), message);
+            chirpMsgId++;
+            appender.appendToFile(chirpMessage.toString());
         }
     }
 
@@ -138,15 +137,15 @@ public class DataGenerator {
         randLocationGen = new RandomLocationGenerator(START_LATITUDE, END_LATITUDE, START_LONGITUDE, END_LONGITUDE);
         String parentDir = controllerInstallDir + "/metadata";
         randMessageGen = new RandomMessageGenerator(msgGenConfigFile, parentDir);
-        numOfFBUsers = (partition.getTargetPartition().getFbUserKeyMax()
-                - partition.getTargetPartition().getFbUserKeyMin()) + 1;
-        numOfTWUsers = (partition.getTargetPartition().getTwUserKeyMax()
-                - partition.getTargetPartition().getTwUserKeyMin()) + 1;
-        avgMsgPerFBU = partition.getTargetPartition().getAvgMsgPerFBU();
-        avgTweetPerTWU = partition.getTargetPartition().getAvgTweetPerTWU();
-        fbUserId = partition.getTargetPartition().getFbUserKeyMin();
-        fbMessageId = partition.getTargetPartition().getFbMessageIdMin();
-        twMessageId = partition.getTargetPartition().getTwMessageIdMin();
+        numOfGBookUsers = (partition.getTargetPartition().getgBookUserKeyMax()
+                - partition.getTargetPartition().getgBookUserKeyMin()) + 1;
+        numOfChirpUsers = (partition.getTargetPartition().getChirpUserKeyMax()
+                - partition.getTargetPartition().getChirpUserKeyMin()) + 1;
+        avgMsgPerGBookUser = partition.getTargetPartition().getAvgMsgPerGBookUser();
+        avgMsgPerChirpUser = partition.getTargetPartition().getAvgMsgPerChirpUser();
+        gBookUserId = partition.getTargetPartition().getgBookUserKeyMin();
+        gBookMsgId = partition.getTargetPartition().getGBookMsgIdMin();
+        chirpMsgId = partition.getTargetPartition().getChirpMsgIdMin();
         outputDir = partition.getSourcePartition().getPath();
 
         generateData();
@@ -158,33 +157,33 @@ public class DataGenerator {
     }
 
     private static void generateData() throws IOException {
-        generateFacebookUsers(numOfFBUsers);
-        generateTwitterUsers(numOfTWUsers);
-        System.out.println("\nData generation in partition :" + partition.getTargetPartition().getName() + " finished");
+        generateGbookUsers(numOfGBookUsers);
+        generateChirpUsers(numOfChirpUsers);
+        System.out.println("\nData generation in partition " + partition.getTargetPartition().getName() + " finished");
     }
 
-    private static void getFacebookUser(String usernameSuffix) {
+    private static void generateGBookUser(String usernameSuffix) {
         String suggestedName = randNameGen.getRandomName();
         String[] nameComponents = suggestedName.split(" ");
         String name = nameComponents[0] + " " + nameComponents[1];
         if (usernameSuffix != null) {
             name = name + usernameSuffix;
         }
-        long id = fbUserId++;
+        long id = gBookUserId++;
         String alias = getUniqueAlias(nameComponents[0], id, MAX_DIGIT);
         String userSince = randDateGen.getNextRandomDatetime().toString();
         int numFriends = random.nextInt(11);
-        long[] friendIds = RandomIdSelector.getKFromN(numFriends, (numOfFBUsers));
+        long[] friendIds = RandomIdSelector.getKFromN(numFriends, (numOfGBookUsers));
         int empCount = 1 + random.nextInt(3);
         ArrayList<Employment> emp = new ArrayList<Employment>(empCount);
         for (int i = 0; i < empCount; i++) {
             Employment e = randEmpGen.getRandomEmployment();
             emp.add(new Employment(e.getOrganization(), e.getStartDate(), e.getEndDate()));
         }
-        fbUser.reset(id, alias, name, userSince, friendIds, emp);
+        gBookUser.reset(id, alias, name, userSince, friendIds, emp);
     }
 
-    private static void getTwitterUser(String usernameSuffix) {
+    private static void generateChirpUser(String usernameSuffix) {
         String suggestedName = randNameGen.getRandomName();
         String[] nameComponents = suggestedName.split(" ");
         String screenName = nameComponents[0] + nameComponents[1] + randNameGen.getRandomNameSuffix();
@@ -195,7 +194,7 @@ public class DataGenerator {
         int numFriends = random.nextInt(MAX_FRIENDS);
         int statusesCount = random.nextInt(MAX_STATUS_COUNT);
         int followersCount = (numFriends - 5) + random.nextInt(200);
-        twUser.reset(screenName, numFriends, statusesCount, name, followersCount);
+        chirpUser.reset(screenName, numFriends, statusesCount, name, followersCount);
     }
 
     private static long generateRandomLong(long x, long y) {

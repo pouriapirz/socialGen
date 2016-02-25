@@ -1,6 +1,6 @@
 package entity;
 
-public class TwitterUser {
+public class ChirpUser {
 
     private String screenName;
     private String lang = "en";
@@ -9,11 +9,11 @@ public class TwitterUser {
     private String name;
     private int followersCount;
 
-    public TwitterUser() {
+    public ChirpUser() {
 
     }
 
-    public TwitterUser(String screenName, int friendsCount, int statusesCount, String name, int followersCount) {
+    public ChirpUser(String screenName, int friendsCount, int statusesCount, String name, int followersCount) {
         this.screenName = screenName;
         this.friendsCount = friendsCount;
         this.statusesCount = statusesCount;
@@ -66,5 +66,4 @@ public class TwitterUser {
         builder.append("}");
         return builder.toString();
     }
-
 }

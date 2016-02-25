@@ -4,7 +4,7 @@ import datatype.DateTime;
 import datatype.Message;
 import datatype.Point;
 
-public class FacebookMessage {
+public class GleambookMessage {
 
     private long messageId;
     private long authorId;
@@ -33,10 +33,10 @@ public class FacebookMessage {
         return inResponseTo;
     }
 
-    public FacebookMessage() {
+    public GleambookMessage() {
     }
 
-    public FacebookMessage(long messageId, long authorId, long inResponseTo, Point senderLocation, DateTime sendTime,
+    public GleambookMessage(long messageId, long authorId, long inResponseTo, Point senderLocation, DateTime sendTime,
             Message message, boolean pcf) {
         this.messageId = messageId;
         this.authorId = authorId;
@@ -47,7 +47,7 @@ public class FacebookMessage {
     }
 
     public void reset(long messageId, long authorId, long inResponseTo, Point senderLocation, DateTime sendTime,
-            Message message/*, boolean pcf*/) {
+            Message message) {
         this.messageId = messageId;
         this.authorId = authorId;
         this.inResponseTo = inResponseTo;

@@ -6,22 +6,22 @@ import datatype.DateTime;
 import datatype.Message;
 import datatype.Point;
 
-public class TweetMessage {
+public class ChirpMessage {
 
-    private long tweetid;
-    private TwitterUser user;
+    private long chirpId;
+    private ChirpUser user;
     private Point senderLocation;
     private DateTime sendTime;
     private List<String> referredTopics;
     private Message messageText;
 
-    public TweetMessage() {
+    public ChirpMessage() {
 
     }
 
-    public TweetMessage(long tweetid, TwitterUser user, Point senderLocation, DateTime sendTime,
+    public ChirpMessage(long chirpId, ChirpUser user, Point senderLocation, DateTime sendTime,
             List<String> referredTopics, Message messageText) {
-        this.tweetid = tweetid;
+        this.chirpId = chirpId;
         this.user = user;
         this.senderLocation = senderLocation;
         this.sendTime = sendTime;
@@ -29,9 +29,9 @@ public class TweetMessage {
         this.messageText = messageText;
     }
 
-    public void reset(long tweetid, TwitterUser user, Point senderLocation, DateTime sendTime,
+    public void reset(long chirpId, ChirpUser user, Point senderLocation, DateTime sendTime,
             List<String> referredTopics, Message messageText) {
-        this.tweetid = tweetid;
+        this.chirpId = chirpId;
         this.user = user;
         this.senderLocation = senderLocation;
         this.sendTime = sendTime;
@@ -42,8 +42,8 @@ public class TweetMessage {
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("{");
-        builder.append("\"tweetid\":");
-        builder.append(" int64(\"").append(tweetid).append("\")");
+        builder.append("\"chirpid\":");
+        builder.append(" int64(\"").append(chirpId).append("\")");
         builder.append(", ");
         builder.append("\"user\":");
         builder.append(user);

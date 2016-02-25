@@ -47,7 +47,7 @@ public class Employment {
     public String toString() {
         StringBuilder builder = new StringBuilder("");
         builder.append("{");
-        builder.append("\"organization_name\":");
+        builder.append("\"organization\":");
         builder.append("\"" + organization + "\"");
         builder.append(",");
         builder.append("\"start_date\":");

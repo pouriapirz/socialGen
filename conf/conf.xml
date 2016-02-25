@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Dbgen>
-<facebookUsers>1000</facebookUsers>
-<twitterUsers>1000</twitterUsers>
-<avgMsg>5</avgMsg>
-<avgTweet>5</avgTweet>
+<gleambook.users.count>1000</gleambook.users.count>
+<chirp.users.count>1000</chirp.users.count>
+<avg.message.count.per.gleambook.user>5</avg.message.count.per.gleambook.user>
+<avg.message.count.per.chirp.user>10</avg.message.count.per.chirp.user>
 
-<Partitions>
+<partitions>
 
 <partition>
 <name>p1</name>
@@ -19,6 +19,6 @@
 <path>/tmp/p2</path>
 </partition>
 
-</Partitions>
+</partitions>
 
 </Dbgen>

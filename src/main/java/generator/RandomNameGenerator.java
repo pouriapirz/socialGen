@@ -13,7 +13,7 @@ public class RandomNameGenerator {
 
     private final Random random = new Random();
 
-    private final String[] connectors = new String[] { "_", "#", "$", "@" };
+    private final String[] connectors = new String[] { "_", "#", "*", "!" };
 
     public RandomNameGenerator(String firstNameFilePath, String lastNameFilePath) throws IOException {
         firstNames = FileUtil.listyFile(new File(firstNameFilePath)).toArray(new String[] {});

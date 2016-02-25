@@ -3,7 +3,7 @@ package entity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FacebookUser {
+public class GleambookUser {
 
     private long id;
     private String alias;
@@ -12,11 +12,11 @@ public class FacebookUser {
     private long[] friendIds;
     private List<Employment> employment;
 
-    public FacebookUser() {
+    public GleambookUser() {
 
     }
 
-    public FacebookUser(long id, String alias, String name, String userSince, long[] friendIds,
+    public GleambookUser(long id, String alias, String name, String userSince, long[] friendIds,
             List<Employment> employment) {
         this.id = id;
         this.alias = alias;

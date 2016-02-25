@@ -2,31 +2,32 @@ package conf;
 
 public class PartitionMetrics {
 
-    private final long numOfFBU;
-    private final long numOfTWU;
-    private final int avgMsgPerFBU;
-    private final int avgTweetPerTWU;
+    private final long numOfGBookUsers;
+    private final long numOfChirpUsers;
+    private final int avgMsgPerGBookUser;
+    private final int avgMsgPerChirpUser;
 
-    public PartitionMetrics(long numOfFBU, long numOfTWU, int avgMsgFBU, int avgMsgTWU, long numOfPartitions) {
-        this.numOfFBU = numOfFBU / numOfPartitions;
-        this.numOfTWU = numOfTWU / numOfPartitions;
-        this.avgMsgPerFBU = avgMsgFBU;
-        this.avgTweetPerTWU = avgMsgTWU;
+    public PartitionMetrics(long numOfGBookUsers, long numOfChirpUsers, int avgMsgGBookUser, int avgMsgChirpUser,
+            long numOfPartitions) {
+        this.numOfGBookUsers = numOfGBookUsers / numOfPartitions;
+        this.numOfChirpUsers = numOfChirpUsers / numOfPartitions;
+        this.avgMsgPerGBookUser = avgMsgGBookUser;
+        this.avgMsgPerChirpUser = avgMsgChirpUser;
     }
 
-    public long getNumOfFBU() {
-        return numOfFBU;
+    public long getNumOfGBookUsers() {
+        return numOfGBookUsers;
     }
 
-    public long getNumOfTWU() {
-        return numOfTWU;
+    public long getNumOfChirpUsers() {
+        return numOfChirpUsers;
     }
 
-    public int getAvgMsgPerFBU() {
-        return avgMsgPerFBU;
+    public int getAvgMsgPerGBookUser() {
+        return avgMsgPerGBookUser;
     }
 
-    public int getAvgTweetPerTWU() {
-        return avgTweetPerTWU;
+    public int getAvgMsgPerChirpUser() {
+        return avgMsgPerChirpUser;
     }
 }
