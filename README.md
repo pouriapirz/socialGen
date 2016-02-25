@@ -39,7 +39,7 @@ SocialGen generates data in Asterix Data Model (ADM) format. Here is a sample da
   
   create type ChirpMessageType as {
   chirpid: int64,    
-  user: TwitterUserType,
+  user: ChirpUserType,
   sender_location: point,
   send_time: datetime,
   referred_topics: {{ string }},
