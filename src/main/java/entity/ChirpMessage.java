@@ -2,6 +2,8 @@ package entity;
 
 import java.util.List;
 
+import socialGen.ADMAppendVisitor;
+import socialGen.IAppendVisitor;
 import datatype.DateTime;
 import datatype.Message;
 import datatype.Point;
@@ -40,38 +42,17 @@ public class ChirpMessage {
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("{");
-        builder.append("\"chirpid\":");
-        builder.append(" int64(\"").append(chirpId).append("\")");
-        builder.append(", ");
-        builder.append("\"user\":");
-        builder.append(user);
-        builder.append(",");
-        builder.append("\"sender_location\":");
-        builder.append(senderLocation);
-        builder.append(",");
-        builder.append("\"send_time\":");
-        builder.append(sendTime);
-        builder.append(",");
-        builder.append("\"referred_topics\":");
-        builder.append("{{");
-        for (String topic : referredTopics) {
-            builder.append("\"" + topic + "\"");
-            builder.append(",");
-        }
-        if (referredTopics.size() > 0) {
-            builder.deleteCharAt(builder.lastIndexOf(","));
-        }
-        builder.append("}}");
-        builder.append(",");
-        builder.append("\"message_text\":");
-        builder.append("\"");
-        for (int i = 0; i < messageText.getLength(); i++) {
-            builder.append(messageText.charAt(i));
-        }
-        builder.append("\"");
-        builder.append("}");
-        return new String(builder);
+        return accept(new ADMAppendVisitor()).toString();
     }
+
+    public IAppendVisitor accept(IAppendVisitor visitor) {
+        visitor.append("{\"chirpid\": ").visit(chirpId);
+        visitor.append(", \"user\": ").visit(user);
+        visitor.append(", \"sender_location\": ").visit(senderLocation);
+        visitor.append(", \"send_time\": ").visit(sendTime);
+        visitor.append(", \"referred_topics\": ").visit(referredTopics);
+        visitor.append(", \"message_text\": ").visit(messageText);
+        return visitor.append("}");
+    }
+
 }

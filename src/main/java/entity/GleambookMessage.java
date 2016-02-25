@@ -1,5 +1,7 @@
 package entity;
 
+import socialGen.ADMAppendVisitor;
+import socialGen.IAppendVisitor;
 import datatype.DateTime;
 import datatype.Message;
 import datatype.Point;
@@ -57,29 +59,16 @@ public class GleambookMessage {
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("{");
-        builder.append("\"message_id\": int64(\"");
-        builder.append(messageId).append("\")");
-        builder.append(",");
-        builder.append("\"author_id\": int64(\"");
-        builder.append(authorId);
-        builder.append("\"), ");
-        builder.append("\"in_response_to\": int64(\"");
-        builder.append(inResponseTo);
-        builder.append("\"),");
-        builder.append("\"sender_location\":");
-        builder.append(senderLocation);
-        builder.append(",");
-        builder.append("\"send_time\":" + sendTime);
-        builder.append(",");
-        builder.append("\"message\":");
-        builder.append("\"");
-        for (int i = 0; i < message.getLength(); i++) {
-            builder.append(message.charAt(i));
-        }
-        builder.append("\"");
-        builder.append("}");
-        return new String(builder);
+        return accept(new ADMAppendVisitor()).toString();
+    }
+
+    public IAppendVisitor accept(IAppendVisitor visitor) {
+        visitor.append("{\"message_id\": ").visit(messageId);
+        visitor.append(", \"author_id\": ").visit(authorId);
+        visitor.append(", \"in_response_to\": ").visit(inResponseTo);
+        visitor.append(", \"sender_location\": ").visit(senderLocation);
+        visitor.append(", \"send_time\": ").visit(sendTime);
+        visitor.append(", \"message\": ").visit(message);
+        return visitor.append("}");
     }
 }

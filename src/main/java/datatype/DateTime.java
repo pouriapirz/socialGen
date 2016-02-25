@@ -1,5 +1,8 @@
 package datatype;
 
+import socialGen.ADMAppendVisitor;
+import socialGen.IAppendVisitor;
+
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -46,23 +49,14 @@ public class DateTime extends Date {
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("datetime");
-        builder.append("(\"");
-        builder.append(super.getYear());
-        builder.append("-");
-        builder.append(super.getMonth() < 10 ? "0" + super.getMonth() : super.getMonth());
-        builder.append("-");
-        builder.append(super.getDay() < 10 ? "0" + super.getDay() : super.getDay());
-        builder.append("T");
+        return accept(new ADMAppendVisitor()).toString();
+    }
 
-        String hourString = (hour < 10) ? ("0" + hour) : ("" + hour);
-        String minString = (minute < 10) ? ("0" + minute) : ("" + minute);
-        String secString = (second < 10) ? ("0" + second) : ("" + second);
-
-        builder.append(hourString + ":" + minString + ":" + secString);
-        builder.append("\")");
-        return builder.toString();
+    public IAppendVisitor accept(IAppendVisitor visitor) {
+        super.accept(visitor);
+        visitor.append("T");
+        visitor.append(toDigits(hour) + ":" + toDigits(minute) + ":" + toDigits(second));
+        return visitor;
     }
 
     public long toTimestamp() {
