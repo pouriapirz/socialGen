@@ -1,5 +1,5 @@
 # SocialGen
-**SocialGen** is a tool for generating large quantities of synthetic data that models status updates/tweets from users of two imaginary social networks: _Gleambook_ and _Chirp_ networks. SocialGen can be configured to run in a parallel/distributed fashion generating partitions of data in parallel using a cluster of machines.
+**SocialGen** is a tool for generating large quantities of synthetic data that models status updates and sent messages from users of two imaginary social networks: _Gleambook_ and _Chirp_ networks. SocialGen can be configured to run in a parallel/distributed fashion generating partitions of data in parallel using a cluster of machines.
 
 SocialGen generates data in Asterix Data Model (ADM) format. Here is a sample data type definition for the output of SocialGen:
 
