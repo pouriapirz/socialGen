@@ -1,5 +1,8 @@
 package datatype;
 
+import socialGen.AdmAppendVisitor;
+import socialGen.IAppendVisitor;
+
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -44,16 +47,15 @@ public class Date {
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("date");
-        builder.append("(\"");
-        builder.append(year);
-        builder.append("-");
-        builder.append(month < 10 ? "0" + month : "" + month);
-        builder.append("-");
-        builder.append(day < 10 ? "0" + day : "" + day);
-        builder.append("\")");
-        return builder.toString();
+        return accept(new AdmAppendVisitor()).toString();
+    }
+
+    public IAppendVisitor accept(IAppendVisitor visitor) {
+        return visitor.append(year + "-" + toDigits(month) + "-" + toDigits(day));
+    }
+
+    protected String toDigits(int i) {
+        return (i < 10 ? "0" + i : "" + i);
     }
 
     public void setDay(int day) {
