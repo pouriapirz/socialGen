@@ -121,24 +121,11 @@ public class DataGenerator {
             printUsage();
             System.exit(1);
         }
-        int i = 0;
-        boolean jsonOutput = false;
-        while (args[i].startsWith("-")) {
-            final String option = args[i];
-            if (option.equals("-j")) {
-                jsonOutput = true;
-            } else if (option.equals("-a")) {
-                jsonOutput = false;
-            } else {
-                System.out.println(" Error: Illegal opion " + option);
-                printUsage();
-                System.exit(1);
-            }
-            ++i;
-        }
-        controllerInstallDir = args[i++];
+
+        controllerInstallDir = args[0];
         String partitionConfXML = controllerInstallDir + "/output/partition-conf.xml";
-        String partitionName = args[i];
+        String partitionName = args[1];
+        boolean jsonOutput = isJsonOutput(args);
         partition = XMLUtil.getPartitionConfiguration(partitionConfXML, partitionName);
 
         randDateGen = new RandomDateGenerator(new Date(START_MONTH, START_DAY, START_YEAR),
@@ -171,10 +158,22 @@ public class DataGenerator {
         generateData(visitor, extension);
     }
 
+    private static boolean isJsonOutput(String[] args) {
+        if (args.length < 3) {
+            return false;
+        }
+        String outputFormat = args[2];
+        if (outputFormat.equalsIgnoreCase("json")) {
+            return true;
+        } else if (outputFormat.equalsIgnoreCase("adm")) {
+            return false;
+        } else {
+            throw new IllegalArgumentException("Illegal output format " + outputFormat);
+        }
+    }
+
     private static void printUsage() {
-        System.out.println("Usage : DataGenerator [-j|-a] <path to configuration file> <partition name> ");
-        System.out.println("        -j : JSON output");
-        System.out.println("        -a : ADM output");
+        System.out.println("Usage : DataGenerator <path to configuration file> <partition name> [JSON|ADM]");
     }
 
     private static void generateData(IAppendVisitor visitor, String extension) throws IOException {
