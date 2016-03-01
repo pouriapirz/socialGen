@@ -1,7 +1,7 @@
 # SocialGen
 **SocialGen** is a tool for generating large quantities of synthetic data that models status updates and sent messages from users of two imaginary social networks: _Gleambook_ and _Chirp_ networks. SocialGen can be configured to run in a parallel/distributed fashion generating partitions of data in parallel using a cluster of machines.
 
-SocialGen generates data in Asterix Data Model (ADM) format. Here is a sample data type definition for the output of SocialGen:
+SocialGen can generate data both in Asterix Data Model (ADM) format and JSON. Here is a sample data type definition for the output of SocialGen:
 
   ```
   create type EmploymentType as {
@@ -74,9 +74,9 @@ Upon a successful build, a new directory named _target_ will be created under SO
   1. machines: This file lists the machine(s) that you want to generate social data on. If you want to generate data only on a single machine, this file may contain the hostname for that machine or simply localhost as the machine name (if everything is done locally). For generating data on a cluster, you need to add the machine names (one machine name per line) into the machines file. 
   __Important:__ SocialGen assumes that the machines that are listed in this file are accessible via password-less SSH.
   
-  2. conf.xml: This file describes the input parameters to SocialGen and properties of each partition of the generated data. You need to specify the total number of GleambookUser and ChirpUser records in the social network along with the average number of messages per user. Moreover, for each partition of the generated data, you specify the machine that the partition resides on and the absolute path for that partition. Please note that the machine should be a valid and accessible machine that is already listed in the machines file (see above) and the path to the partition should be writable.
+  2. conf.xml: This file describes the input parameters to SocialGen and properties of each partition of the generated data. The random data generation process in SocialGen uses a single global _seed_ to control the generation process. This seed is specified in the conf.xml file. In a multi-partition case, SocialGen assigns a unique seed, derived from the global seed, to each partition. In the conf.xml file, you also need to specify the total number of GleambookUser and ChirpUser records in the social network along with the average number of messages per user. Moreover, for each partition of the generated data, you specify a unique partition _id_ (__Important:__ The partition id has to be a _unique_ _numeric_ value (64-bit integer) per partition), the machine that the partition resides on and the absolute path for that partition. Please note that the machine should be a valid and accessible machine that is already listed in the machines file (see above) and the path to the partition should be writable.
 
-  As an example, imagine we have two machines: _rainbow-1_ and _rainbow-2_, while on each one of them we want to have two partitions of generated data such that partitions _p0_ and _p1_ reside on rainbow-1 and partitions _p2_ and _p3_ reside on rainbow-2. Moreover, assume we decide to have 1000 users in the GleambookUsers dataset with an average of 5 messages per user and 2000 users in the ChirpUsers with an average of 10 chirp messages per user. The configuration files for this example would look like as:
+  As an example, imagine we have two machines: _rainbow-1_ and _rainbow-2_, while on each one of them we want to have two partitions of generated data such that partitions _1_ and _2_ reside on rainbow-1 and partitions _3_ and _4_ reside on rainbow-2. Moreover, assume we decide to have 1000 users in the GleambookUsers dataset with an average of 5 messages per user and 2000 users in the ChirpUsers with an average of 10 chirp messages per user. The configuration files for this example would look like as:
 
   _machines_ file:
   ```
@@ -91,28 +91,29 @@ Upon a successful build, a new directory named _target_ will be created under SO
     <chirp.users.count>1000</chirp.users.count>
     <avg.message.count.per.gleambook.user>5</avg.message.count.per.gleambook.user>
     <avg.message.count.per.chirp.user>10</avg.message.count.per.chirp.user>
+    <seed>10</seed>
   
   	<partitions>
   		<partition>
-  			<name>p0</name>
+  			<id>1</id>
   			<host>rainbow-1</host>
   			<path>/mnt/data/sda/socialData</path>
   		</partition>
   
   		<partition>
-  			<name>p1</name>
+  			<id>2</id>
   			<host>rainbow-1</host>
   			<path>/mnt/data/sdb/socialData</path>
   		</partition>
   
   		<partition>
-  			<name>p2</name>
+  			<id>3</id>
   			<host>rainbow-2</host>
   			<path>/mnt/data/sda/socialData</path>
   		</partition>
   
   		<partition>
-  			<name>p3</name>
+  			<id>4</id>
   			<host>rainbow-2</host>
   			<path>/mnt/data/sdb/socialData</path>
   		</partition>
@@ -130,10 +131,16 @@ Upon a successful build, a new directory named _target_ will be created under SO
   ```
   > $SOCIAL_GEN_HOME/scripts/install.sh
   ```
-7. Run SocialGen to initialize the data generation process:
-
+7. Run SocialGen to initialize the data generation process. 
+ 
+For generating data in ADM format, you simply run:
+  
   ```
   > $SOCIAL_GEN_HOME/scripts/init.sh
   ```
+  For generating data in JSON format, you need to invoke the _init.sh_ script as:
  
-Upon termination of the generation process, you can find three data files (in .adm format) per partition under the path that is specified for the partition in the conf.xml file.
+ ```
+  > $SOCIAL_GEN_HOME/scripts/init.sh JSON
+ ```
+Upon termination of the generation process, you can find three data files (in .adm or .json format, depending on your preference (see previous step)) per partition under the path that is specified for the partition in the conf.xml file.
