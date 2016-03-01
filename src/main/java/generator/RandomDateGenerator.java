@@ -10,17 +10,17 @@ public class RandomDateGenerator {
     private final long sDate;
     private final long eDate;
     private final long diff;
-    private final Random random = new Random(System.currentTimeMillis());
-
+    private final Random random;
     private Date date;
     private DateTime dateTime;
 
-    public RandomDateGenerator(Date startDate, Date endDate) {
+    public RandomDateGenerator(Date startDate, Date endDate, long seed) {
         this.sDate = startDate.toTimestamp();
         this.eDate = endDate.toTimestamp();
         this.diff = (eDate - sDate) + 1;
         this.date = new Date();
         this.dateTime = new DateTime();
+        this.random = new Random(seed);
     }
 
     public Date getNextRandomDate() {

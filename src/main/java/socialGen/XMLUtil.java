@@ -32,11 +32,12 @@ public class XMLUtil {
 
     final static String PARTITIONS = "partitions";
     final static String PARTITION = "partition";
-    final static String NAME = "name";
+    final static String ID = "id";
     final static String HOST = "host";
     final static String PATH = "path";
     final static String GBOOK_USERS = "gleambook.users.count";
     final static String CHIRP_USERS = "chirp.users.count";
+    final static String SEED = "seed";
     final static String GBOOK_USER_KEY_MIN = "gbook.users.key.min";
     final static String GBOOK_USER_KEY_MAX = "gbook.users.key.max";
     final static String CHIRP_USER_KEY_MIN = "chirp.users.key.min";
@@ -82,7 +83,7 @@ public class XMLUtil {
     public static void writePartitionInfo(Configuration conf, String filePath) throws IOException {
         BufferedWriter bw = new BufferedWriter(new FileWriter(filePath));
         for (SourcePartition sp : conf.getSourcePartitions()) {
-            bw.write(sp.getHost() + ":" + sp.getName() + ":" + sp.getPath());
+            bw.write(sp.getHost() + ":" + sp.getId() + ":" + sp.getPath());
             bw.write("\n");
         }
         bw.close();
@@ -99,8 +100,9 @@ public class XMLUtil {
 
     public static Configuration getConfiguration(String filePath) throws Exception {
         Configuration conf = getConfiguration(getDocument(filePath));
-        PartitionMetrics metrics = new PartitionMetrics(conf.getNumOfGBookUsers(), conf.getNumOfChirpUsers(),
-                conf.getAvgMsgGBookUser(), conf.getAvgMsgChirpUser(), conf.getSourcePartitions().size());
+        PartitionMetrics metrics = new PartitionMetrics(conf.getSeed(), conf.getNumOfGBookUsers(),
+                conf.getNumOfChirpUsers(), conf.getAvgMsgGBookUser(), conf.getAvgMsgChirpUser(),
+                conf.getSourcePartitions().size());
         List<TargetPartition> targetPartitions = getTargetPartitions(metrics, conf.getSourcePartitions());
         conf.setTargetPartitions(targetPartitions);
         return conf;
@@ -109,13 +111,13 @@ public class XMLUtil {
     private static Configuration getConfiguration(Document document) throws IOException {
         Element rootEle = document.getDocumentElement();
         NodeList nodeList = rootEle.getChildNodes();
+        long seed = Long.parseLong(getStringValue((Element) nodeList, SEED));
         long gBookUserCount = Long.parseLong(getStringValue((Element) nodeList, GBOOK_USERS));
         long chirpUserCount = Long.parseLong(getStringValue((Element) nodeList, CHIRP_USERS));
         int avgMsgPerGBookUser = Integer.parseInt(getStringValue((Element) nodeList, AVG_MSG_PER_GBOOK_USER));
         int avgMsgPerChirpUser = Integer.parseInt(getStringValue((Element) nodeList, AVG_MSG_PER_CHIRP_USER));
-
         List<SourcePartition> sourcePartitions = getSourcePartitions(document);
-        return new Configuration(gBookUserCount, chirpUserCount, avgMsgPerGBookUser, avgMsgPerChirpUser,
+        return new Configuration(seed, gBookUserCount, chirpUserCount, avgMsgPerGBookUser, avgMsgPerChirpUser,
                 sourcePartitions);
     }
 
@@ -131,10 +133,10 @@ public class XMLUtil {
     }
 
     private static SourcePartition getSourcePartition(Element functionElement) {
-        String name = getStringValue(functionElement, NAME);
+        long id = Long.parseLong(getStringValue(functionElement, ID));
         String host = getStringValue(functionElement, HOST);
         String path = getStringValue(functionElement, PATH);
-        SourcePartition sp = new SourcePartition(name, host, path);
+        SourcePartition sp = new SourcePartition(id, host, path);
         return sp;
     }
 
@@ -148,13 +150,12 @@ public class XMLUtil {
         return textValue;
     }
 
-    public static PartitionConfiguration getPartitionConfiguration(String filePath, String partitionName)
-            throws Exception {
-        PartitionConfiguration pconf = getPartitionConfigurations(getDocument(filePath), partitionName);
+    public static PartitionConfiguration getPartitionConfiguration(String filePath, long partitionId) throws Exception {
+        PartitionConfiguration pconf = getPartitionConfigurations(getDocument(filePath), partitionId);
         return pconf;
     }
 
-    private static PartitionConfiguration getPartitionConfigurations(Document document, String partitionName)
+    private static PartitionConfiguration getPartitionConfigurations(Document document, long partitionId)
             throws IOException {
 
         Element rootEle = document.getDocumentElement();
@@ -163,8 +164,8 @@ public class XMLUtil {
         for (int i = 0; i < nodeList.getLength(); i++) {
             Node node = nodeList.item(i);
             Element nodeElement = (Element) node;
-            String name = getStringValue(nodeElement, NAME);
-            if (!name.equalsIgnoreCase(partitionName)) {
+            long id = Long.parseLong(getStringValue(nodeElement, ID));
+            if (id != partitionId) {
                 continue;
             }
             String host = getStringValue(nodeElement, HOST);
@@ -180,14 +181,15 @@ public class XMLUtil {
             String chirpMsgKeyMax = getStringValue(nodeElement, CHIRP_MSG_KEY_MAX);
             String avgMsgPerGBookUser = getStringValue(nodeElement, AVG_MSG_PER_GBOOK_USER);
             String avgMsgPerChirpUser = getStringValue(nodeElement, AVG_MSG_PER_CHIRP_USER);
+            String seed = getStringValue(nodeElement, SEED);
 
-            SourcePartition sp = new SourcePartition(name, host, path);
+            SourcePartition sp = new SourcePartition(id, host, path);
 
-            TargetPartition tp = new TargetPartition(partitionName, host, path, Long.parseLong(gBookUserKeyMin),
+            TargetPartition tp = new TargetPartition(id, host, path, Long.parseLong(gBookUserKeyMin),
                     Long.parseLong(gBUserKeyMax), Long.parseLong(chirpUserKeyMin), Long.parseLong(chirpUserKeyMax),
                     Long.parseLong(gBookMsgKeyMin), Long.parseLong(gBookMsgKeyMax), Long.parseLong(chirpMsgKeyMin),
                     Long.parseLong(chirpMsgKeyMax), Integer.parseInt(avgMsgPerGBookUser),
-                    Integer.parseInt(avgMsgPerChirpUser));
+                    Integer.parseInt(avgMsgPerChirpUser), Long.parseLong(seed));
             PartitionConfiguration pc = new PartitionConfiguration(sp, tp);
             return pc;
         }
@@ -201,11 +203,11 @@ public class XMLUtil {
         long chirpUserKeyMin = 1;
         long gBookMsgIdMin = 1;
         long chirpMsgIdMin = 1;
-
         int avgMsgPerGBookUser = metrics.getAvgMsgPerGBookUser();
         int avgMsgPerChirpUser = metrics.getAvgMsgPerChirpUser();
 
         for (SourcePartition sp : sourcePartitions) {
+            long partitionSeed = metrics.getSeed() + sp.getId();
             long gBookUserKeyMax = gBookUserKeyMin + metrics.getNumOfGBookUsers() - 1;
             long chirpUserKeyMax = chirpUserKeyMin + metrics.getNumOfChirpUsers() - 1;
 
@@ -214,9 +216,9 @@ public class XMLUtil {
 
             long gBookMsgIdMax = gBookMsgIdMin + maxPossibleGBookMsgs - 1;
             long chirpMsgIdMax = chirpMsgIdMin + maxPossibleChirpMsgs - 1;
-            TargetPartition pe = new TargetPartition(sp.getName(), sp.getHost(), sp.getPath(), gBookUserKeyMin,
+            TargetPartition pe = new TargetPartition(sp.getId(), sp.getHost(), sp.getPath(), gBookUserKeyMin,
                     gBookUserKeyMax, chirpUserKeyMin, chirpUserKeyMax, gBookMsgIdMin, gBookMsgIdMax, chirpMsgIdMin,
-                    chirpMsgIdMax, avgMsgPerGBookUser, avgMsgPerChirpUser);
+                    chirpMsgIdMax, avgMsgPerGBookUser, avgMsgPerChirpUser, partitionSeed);
             partitions.add(pe);
 
             gBookUserKeyMin = gBookUserKeyMax + 1;
@@ -235,9 +237,9 @@ public class XMLUtil {
         Element pe = doc.createElement(PARTITION);
         rootElement.appendChild(pe);
 
-        Element name = doc.createElement(NAME);
-        name.appendChild(doc.createTextNode("" + partition.getName()));
-        pe.appendChild(name);
+        Element id = doc.createElement(ID);
+        id.appendChild(doc.createTextNode("" + partition.getId()));
+        pe.appendChild(id);
 
         Element host = doc.createElement(HOST);
         host.appendChild(doc.createTextNode("" + partition.getHost()));
@@ -246,6 +248,10 @@ public class XMLUtil {
         Element path = doc.createElement(PATH);
         path.appendChild(doc.createTextNode("" + partition.getPath()));
         pe.appendChild(path);
+
+        Element seed = doc.createElement(SEED);
+        seed.appendChild(doc.createTextNode("" + partition.getSeed()));
+        pe.appendChild(seed);
 
         Element gBookUserKeyMin = doc.createElement(GBOOK_USER_KEY_MIN);
         gBookUserKeyMin.appendChild(doc.createTextNode("" + partition.getgBookUserKeyMin()));

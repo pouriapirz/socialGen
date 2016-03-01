@@ -10,14 +10,13 @@ public class RandomNameGenerator {
 
     private String[] firstNames;
     private String[] lastNames;
-
-    private final Random random = new Random();
-
+    private final Random random;
     private final String[] connectors = new String[] { "_", "#", "*", "!" };
 
-    public RandomNameGenerator(String firstNameFilePath, String lastNameFilePath) throws IOException {
-        firstNames = FileUtil.listyFile(new File(firstNameFilePath)).toArray(new String[] {});
-        lastNames = FileUtil.listyFile(new File(lastNameFilePath)).toArray(new String[] {});
+    public RandomNameGenerator(String firstNameFilePath, String lastNameFilePath, long seed) throws IOException {
+        this.firstNames = FileUtil.listyFile(new File(firstNameFilePath)).toArray(new String[] {});
+        this.lastNames = FileUtil.listyFile(new File(lastNameFilePath)).toArray(new String[] {});
+        this.random = new Random(seed);
     }
 
     public String getRandomName() {

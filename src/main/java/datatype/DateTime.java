@@ -60,11 +60,13 @@ public class DateTime extends Date {
     }
 
     public long toTimestamp() {
+        c.clear();
         c.set(year, (month - 1), day, hour, minute, second);
         return c.getTimeInMillis();
     }
 
     public void reset(long ts) {
+        c.clear();
         c.setTimeInMillis(ts);
         this.year = c.get(Calendar.YEAR);
         this.month = c.get(Calendar.MONTH) + 1;

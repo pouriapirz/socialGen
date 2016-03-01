@@ -71,11 +71,13 @@ public class Date {
     }
 
     public long toTimestamp() {
+        c.clear();
         c.set(year, (month - 1), day); //In the Gregorian Calendar, first month is 0
         return c.getTimeInMillis();
     }
 
     public void reset(long ts) {
+        c.clear();
         c.setTimeInMillis(ts);
         this.year = c.get(Calendar.YEAR);
         this.month = c.get(Calendar.MONTH) + 1;
@@ -86,6 +88,7 @@ public class Date {
         this.year = d.getYear();
         this.month = d.getMonth();
         this.day = d.getDay();
+        c.clear();
         c.set(year, (month - 1), day);
     }
 }

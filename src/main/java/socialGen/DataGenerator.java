@@ -3,8 +3,6 @@ package socialGen;
 import java.io.IOException;
 import java.util.Random;
 
-import utility.FileAppender;
-import utility.FileUtil;
 import conf.PartitionConfiguration;
 import datatype.Date;
 import datatype.DateTime;
@@ -22,6 +20,8 @@ import generator.RandomIdSelector;
 import generator.RandomLocationGenerator;
 import generator.RandomMessageGenerator;
 import generator.RandomNameGenerator;
+import utility.FileAppender;
+import utility.FileUtil;
 
 public class DataGenerator {
 
@@ -46,6 +46,8 @@ public class DataGenerator {
     private static RandomEmploymentGenerator randEmpGen;
     private static RandomMessageGenerator randMessageGen;
     private static RandomLocationGenerator randLocationGen;
+    private static RandomIdSelector randIdSelector;
+    private static Random random;
     private static long numOfGBookUsers;
     private static long numOfChirpUsers;
     private static int avgMsgPerGBookUser;
@@ -54,7 +56,6 @@ public class DataGenerator {
     private static long gBookMsgId;
     private static long chirpMsgId;
 
-    private static Random random = new Random(System.currentTimeMillis());
     private static String outputDir;
     private static PartitionConfiguration partition;
 
@@ -119,27 +120,29 @@ public class DataGenerator {
             printUsage();
             System.exit(1);
         }
-
         controllerInstallDir = args[0];
         String partitionConfXML = controllerInstallDir + "/output/partition-conf.xml";
-        String partitionName = args[1];
+        long partitionId = Long.parseLong(args[1]);
         boolean jsonOutput = isJsonOutput(args);
-        partition = XMLUtil.getPartitionConfiguration(partitionConfXML, partitionName);
-
-        randDateGen = new RandomDateGenerator(new Date(START_MONTH, START_DAY, START_YEAR),
-                new Date(END_MONTH, END_DAY, END_YEAR));
+        partition = XMLUtil.getPartitionConfiguration(partitionConfXML, partitionId);
 
         String firstNameFile = controllerInstallDir + "/metadata/firstNames.txt";
         String lastNameFile = controllerInstallDir + "/metadata/lastNames.txt";
         String msgGenConfigFile = controllerInstallDir + "/metadata/config.txt";
         String orgList = controllerInstallDir + "/metadata/org_list.txt";
 
-        randNameGen = new RandomNameGenerator(firstNameFile, lastNameFile);
+        long seed = partition.getTargetPartition().getSeed();
+        random = new Random(seed);
+        randDateGen = new RandomDateGenerator(new Date(START_MONTH, START_DAY, START_YEAR),
+                new Date(END_MONTH, END_DAY, END_YEAR), seed);
+        randNameGen = new RandomNameGenerator(firstNameFile, lastNameFile, seed);
         randEmpGen = new RandomEmploymentGenerator(EMPLOYED_USERS_RATIO, new Date(START_MONTH, START_DAY, START_YEAR),
-                new Date(END_MONTH, END_DAY, EMPLOYMENT_LAST_START_YEAR), orgList);
-        randLocationGen = new RandomLocationGenerator(START_LATITUDE, END_LATITUDE, START_LONGITUDE, END_LONGITUDE);
+                new Date(END_MONTH, END_DAY, EMPLOYMENT_LAST_START_YEAR), orgList, seed);
+        randLocationGen = new RandomLocationGenerator(START_LATITUDE, END_LATITUDE, START_LONGITUDE, END_LONGITUDE,
+                seed);
+        randIdSelector = new RandomIdSelector(seed);
         String parentDir = controllerInstallDir + "/metadata";
-        randMessageGen = new RandomMessageGenerator(msgGenConfigFile, parentDir);
+        randMessageGen = new RandomMessageGenerator(msgGenConfigFile, parentDir, seed);
         numOfGBookUsers = (partition.getTargetPartition().getgBookUserKeyMax()
                 - partition.getTargetPartition().getgBookUserKeyMin()) + 1;
         numOfChirpUsers = (partition.getTargetPartition().getChirpUserKeyMax()
@@ -177,7 +180,7 @@ public class DataGenerator {
     private static void generateData(IAppendVisitor visitor, String extension) throws IOException {
         generateGbookUsers(numOfGBookUsers, visitor, extension);
         generateChirpUsers(numOfChirpUsers, visitor, extension);
-        System.out.println("\nData generation in partition " + partition.getTargetPartition().getName() + " finished");
+        System.out.println("\nData generation in partition " + partition.getTargetPartition().getId() + " finished");
     }
 
     private static void generateGBookUser(String usernameSuffix) {
@@ -191,7 +194,7 @@ public class DataGenerator {
         String alias = getUniqueAlias(nameComponents[0], id, MAX_DIGIT);
         DateTime userSince = randDateGen.getNextRandomDatetime();
         int numFriends = random.nextInt(11);
-        long[] friendIds = RandomIdSelector.getKFromN(numFriends, (numOfGBookUsers));
+        long[] friendIds = randIdSelector.getKFromN(numFriends, (numOfGBookUsers));
         int empCount = 1 + random.nextInt(3);
         Employments emp = new Employments(empCount);
         for (int i = 0; i < empCount; i++) {

@@ -1,7 +1,7 @@
 package conf;
 
 public class TargetPartition {
-    private final String name;
+    private final long id;
     private final String host;
     private final String path;
     private final long gBookUserKeyMin;
@@ -14,11 +14,12 @@ public class TargetPartition {
     private final long chirpMsgIdMax;
     private final int avgMsgPerGBookUser;
     private final int avgMsgPerChirpUser;
+    private final long seed;
 
-    public TargetPartition(String partitionName, String host, String path, long gBookUserKeyMin, long gBookUserKeyMax,
+    public TargetPartition(long id, String host, String path, long gBookUserKeyMin, long gBookUserKeyMax,
             long chirpUserKeyMin, long chirpUserKeyMax, long gBookMsgIdMin, long gBookMsgIdMax, long chirpMsgIdMin,
-            long chirpMsgIdMax, int avgMsgPerGBookUser, int avgChirpMsgPerUser) {
-        this.name = partitionName;
+            long chirpMsgIdMax, int avgMsgPerGBookUser, int avgChirpMsgPerUser, long seed) {
+        this.id = id;
         this.host = host;
         this.path = path;
         this.gBookUserKeyMin = gBookUserKeyMin;
@@ -31,10 +32,11 @@ public class TargetPartition {
         this.gBookMsgIdMax = gBookMsgIdMax;
         this.avgMsgPerGBookUser = avgMsgPerGBookUser;
         this.avgMsgPerChirpUser = avgChirpMsgPerUser;
+        this.seed = seed;
     }
 
-    public String getName() {
-        return name;
+    public long getId() {
+        return id;
     }
 
     public String getHost() {
@@ -83,5 +85,9 @@ public class TargetPartition {
 
     public String getPath() {
         return path;
+    }
+
+    public long getSeed() {
+        return seed;
     }
 }

@@ -6,8 +6,7 @@ import datatype.Point;
 
 public class RandomLocationGenerator {
 
-    private Random random = new Random();
-
+    private final Random random;
     private final int beginLat;
     private final int endLat;
     private final int beginLong;
@@ -15,12 +14,13 @@ public class RandomLocationGenerator {
 
     private Point point;
 
-    public RandomLocationGenerator(int beginLat, int endLat, int beginLong, int endLong) {
+    public RandomLocationGenerator(int beginLat, int endLat, int beginLong, int endLong, long seed) {
         this.beginLat = beginLat;
         this.endLat = endLat;
         this.beginLong = beginLong;
         this.endLong = endLong;
         this.point = new Point();
+        this.random = new Random(seed);
     }
 
     public Point getRandomPoint() {

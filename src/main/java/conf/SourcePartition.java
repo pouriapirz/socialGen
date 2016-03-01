@@ -2,18 +2,18 @@ package conf;
 
 public class SourcePartition {
 
-    private final String name;
+    private final long id;
     private final String host;
     private final String path;
 
-    public SourcePartition(String name, String host, String path) {
-        this.name = name;
+    public SourcePartition(long id, String host, String path) {
+        this.id = id;
         this.host = host;
         this.path = path;
     }
 
-    public String getName() {
-        return name;
+    public long getId() {
+        return id;
     }
 
     public String getHost() {

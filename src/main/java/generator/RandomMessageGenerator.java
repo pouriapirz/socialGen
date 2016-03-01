@@ -37,17 +37,16 @@ public class RandomMessageGenerator {
     private final String part_rare = "RARE_PART";
     private final String part_med = "MED_PART";
     private final String part_freq = "FREQ_PART";
-
+    private final Random rand;
     private ServiceRelatedMessage serviceMsgGen;
     private DeviceRelatedMessage deviceMsgGen;
     private MessageSettings settings;
 
-    private Random rand = new Random(System.currentTimeMillis());
-
-    public RandomMessageGenerator(String configFile, String parentDir) {
+    public RandomMessageGenerator(String configFile, String parentDir, long seed) {
         this.settings = new MessageSettings(configFile, parentDir);
-        setServiceMsgGen();
-        setDeviceMsgGen();
+        this.rand = new Random(seed);
+        setServiceMsgGen(seed);
+        setDeviceMsgGen(seed);
     }
 
     public Message getNextRandomMessage(boolean needTopics) {
@@ -59,7 +58,7 @@ public class RandomMessageGenerator {
         }
     }
 
-    private void setServiceMsgGen() {
+    private void setServiceMsgGen(long seed) {
         String posAdjFile = settings.getParam(posAdj);
         String negAdjFile = settings.getParam(negAdj);
         String posFeelFile = settings.getParam(posFeel);
@@ -75,12 +74,12 @@ public class RandomMessageGenerator {
         String vendor_freqFile = settings.getParam(vendor_freq);
 
         this.serviceMsgGen = new ServiceRelatedMessage(posAdjFile, negAdjFile, posFeelFile, negFeelFile,
-                serviceActivityVerbsFile, jargonFile);
+                serviceActivityVerbsFile, jargonFile, seed);
         serviceMsgGen.setLocs(location_rareFile, location_medFile, location_freqFile);
         serviceMsgGen.setVendors(vendor_rareFile, vendor_medFile, vendor_freqFile);
     }
 
-    private void setDeviceMsgGen() {
+    private void setDeviceMsgGen(long seed) {
         String posAdjFile = settings.getParam(posAdj);
         String negAdjFile = settings.getParam(negAdj);
         String posFeelFile = settings.getParam(posFeel);
@@ -96,7 +95,7 @@ public class RandomMessageGenerator {
         String part_freqFile = settings.getParam(part_freq);
 
         this.deviceMsgGen = new DeviceRelatedMessage(posAdjFile, negAdjFile, posFeelFile, negFeelFile,
-                deviceActivityVerbsFile, timeFile);
+                deviceActivityVerbsFile, timeFile, seed);
         deviceMsgGen.setDevices(device_rareFile, device_medFile, device_freqFile);
         deviceMsgGen.setParts(part_rareFile, part_medFile, part_freqFile);
     }
@@ -107,14 +106,15 @@ abstract class MessageTemplate {
     protected final double MED = 0.25; //[0.05, 0.25) => MED Messages (20%)
                                        //[0.25, 1.0) => FREQ Messages (75%)
     protected final double NOISE = 0.05; //(5%)
-    protected final Random random = new Random();
+    protected final Random random;
 
     List<String> positiveFeeling;
     List<String> negativeFeeling;
     List<String> positiveAdj;
     List<String> negativeAdj;
 
-    public MessageTemplate(String posAdjFile, String negAdjFile, String posFeelFile, String negFeelFile) {
+    public MessageTemplate(String posAdjFile, String negAdjFile, String posFeelFile, String negFeelFile, long seed) {
+        this.random = new Random(seed);
         try {
             positiveAdj = FileUtil.listyFile(new File(posAdjFile));
             negativeAdj = FileUtil.listyFile(new File(negAdjFile));
@@ -188,8 +188,8 @@ class ServiceRelatedMessage extends MessageTemplate {
     String[] baseParts = new String[6];
 
     public ServiceRelatedMessage(String posAdjFile, String negAdjFile, String posFeelFile, String negFeelFile,
-            String actVerbFile, String jargonFile) {
-        super(posAdjFile, negAdjFile, posFeelFile, negFeelFile);
+            String actVerbFile, String jargonFile, long seed) {
+        super(posAdjFile, negAdjFile, posFeelFile, negFeelFile, seed);
         try {
             jargon = FileUtil.listyFile(new File(jargonFile));
             activityVerbs = FileUtil.listyFile(new File(actVerbFile));
@@ -324,8 +324,8 @@ class DeviceRelatedMessage extends MessageTemplate {
     String[] baseParts = new String[5]; //Keep reusing it
 
     public DeviceRelatedMessage(String posAdjFile, String negAdjFile, String posFeelFile, String negFeelFile,
-            String actVerbFile, String timeFile) {
-        super(posAdjFile, negAdjFile, posFeelFile, negFeelFile);
+            String actVerbFile, String timeFile, long seed) {
+        super(posAdjFile, negAdjFile, posFeelFile, negFeelFile, seed);
         try {
             time = FileUtil.listyFile(new File(timeFile));
             activityVerbs = FileUtil.listyFile(new File(actVerbFile));

@@ -4,17 +4,18 @@
 <chirp.users.count>1000</chirp.users.count>
 <avg.message.count.per.gleambook.user>5</avg.message.count.per.gleambook.user>
 <avg.message.count.per.chirp.user>10</avg.message.count.per.chirp.user>
+<seed>10</seed>
 
 <partitions>
 
 <partition>
-<name>p1</name>
+<id>1</id>
 <host>localhost</host>
 <path>/tmp/p1</path>
 </partition>
 
 <partition>
-<name>p2</name>
+<id>2</id>
 <host>localhost</host>
 <path>/tmp/p2</path>
 </partition>

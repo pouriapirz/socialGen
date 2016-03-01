@@ -6,13 +6,15 @@ public class PartitionMetrics {
     private final long numOfChirpUsers;
     private final int avgMsgPerGBookUser;
     private final int avgMsgPerChirpUser;
+    private final long seed;
 
-    public PartitionMetrics(long numOfGBookUsers, long numOfChirpUsers, int avgMsgGBookUser, int avgMsgChirpUser,
-            long numOfPartitions) {
+    public PartitionMetrics(long seed, long numOfGBookUsers, long numOfChirpUsers, int avgMsgGBookUser,
+            int avgMsgChirpUser, long numOfPartitions) {
         this.numOfGBookUsers = numOfGBookUsers / numOfPartitions;
         this.numOfChirpUsers = numOfChirpUsers / numOfPartitions;
         this.avgMsgPerGBookUser = avgMsgGBookUser;
         this.avgMsgPerChirpUser = avgMsgChirpUser;
+        this.seed = seed;
     }
 
     public long getNumOfGBookUsers() {
@@ -29,5 +31,9 @@ public class PartitionMetrics {
 
     public int getAvgMsgPerChirpUser() {
         return avgMsgPerChirpUser;
+    }
+
+    public long getSeed() {
+        return seed;
     }
 }

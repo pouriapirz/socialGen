@@ -12,17 +12,18 @@ import utility.FileUtil;
 public class RandomEmploymentGenerator {
 
     private final int percentEmployed;
-    private final Random random = new Random();
+    private final Random random;
     private final RandomDateGenerator randDateGen;
     private final List<String> organizations;
     private Employment emp;
 
-    public RandomEmploymentGenerator(int percentEmployed, Date beginEmpDate, Date endEmpDate, String orgListPath)
-            throws IOException {
+    public RandomEmploymentGenerator(int percentEmployed, Date beginEmpDate, Date endEmpDate, String orgListPath,
+            long seed) throws IOException {
         this.percentEmployed = percentEmployed;
-        this.randDateGen = new RandomDateGenerator(beginEmpDate, endEmpDate);
+        this.randDateGen = new RandomDateGenerator(beginEmpDate, endEmpDate, seed);
         organizations = FileUtil.listyFile(new File(orgListPath));
         emp = new Employment();
+        random = new Random(seed);
     }
 
     public Employment getRandomEmployment() {
