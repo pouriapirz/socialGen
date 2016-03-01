@@ -131,7 +131,7 @@ Upon a successful build, a new directory named _target_ will be created under SO
   ```
   > $SOCIAL_GEN_HOME/scripts/install.sh
   ```
-7. Run SocialGen to initialize the data generation process. 
+7. Run SocialGen to initialize the data generation process: 
  
 For generating data in ADM format, you simply run:
   
