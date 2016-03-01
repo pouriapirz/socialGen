@@ -1,9 +1,10 @@
 package socialGen;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Random;
 
+import utility.FileAppender;
+import utility.FileUtil;
 import conf.PartitionConfiguration;
 import datatype.Date;
 import datatype.DateTime;
@@ -12,6 +13,7 @@ import datatype.Point;
 import entity.ChirpMessage;
 import entity.ChirpUser;
 import entity.Employment;
+import entity.Employments;
 import entity.GleambookMessage;
 import entity.GleambookUser;
 import generator.RandomDateGenerator;
@@ -20,8 +22,6 @@ import generator.RandomIdSelector;
 import generator.RandomLocationGenerator;
 import generator.RandomMessageGenerator;
 import generator.RandomNameGenerator;
-import utility.FileAppender;
-import utility.FileUtil;
 
 public class DataGenerator {
 
@@ -63,31 +63,31 @@ public class DataGenerator {
     private static GleambookMessage gBookMessage = new GleambookMessage();
     private static ChirpMessage chirpMessage = new ChirpMessage();
 
-    private static void generateGbookUsers(long numGBookUsers) throws IOException {
-        FileAppender appender = FileUtil.getFileAppender(outputDir + "/" + "gbook_users.adm", true, true);
-        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "gbook_messages.adm", true, true);
+    private static void generateGbookUsers(long numGBookUsers, IAppendVisitor visitor, String ext) throws IOException {
+        FileAppender appender = FileUtil.getFileAppender(outputDir + "/" + "gbook_users." + ext, true, true);
+        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "gbook_messages." + ext, true, true);
         for (long i = 0; i < numGBookUsers; i++) {
             generateGBookUser(null);
-            appender.appendToFile(gBookUser.toString());
+            appender.appendToFile(visitor.reset().visit(gBookUser).toString());
             int numOfMsg = random.nextInt(2 * avgMsgPerGBookUser + 1);
-            generateGBookMessages(gBookUser, messageAppender, numOfMsg);
+            generateGBookMessages(gBookUser, messageAppender, numOfMsg, visitor);
         }
         appender.close();
         messageAppender.close();
     }
 
-    private static void generateChirpUsers(long numChirpUsers) throws IOException {
-        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "chirp_messages.adm", true, true);
+    private static void generateChirpUsers(long numChirpUsers, IAppendVisitor visitor, String ext) throws IOException {
+        FileAppender messageAppender = FileUtil.getFileAppender(outputDir + "/" + "chirp_messages." + ext, true, true);
         for (long i = 0; i < numChirpUsers; i++) {
             generateChirpUser(null);
             int numOfMsg = random.nextInt(2 * avgMsgPerChirpUser + 1);
-            generateChirpMessages(chirpUser, messageAppender, numOfMsg);
+            generateChirpMessages(chirpUser, messageAppender, numOfMsg, visitor);
         }
         messageAppender.close();
     }
 
-    private static void generateGBookMessages(GleambookUser user, FileAppender appender, int numMsg)
-            throws IOException {
+    private static void generateGBookMessages(GleambookUser user, FileAppender appender, int numMsg,
+            IAppendVisitor visitor) throws IOException {
         Message message;
         for (int i = 0; i < numMsg; i++) {
             message = randMessageGen.getNextRandomMessage(false);
@@ -95,11 +95,12 @@ public class DataGenerator {
             DateTime sendTime = randDateGen.getNextRandomDatetime();
             gBookMessage.reset(gBookMsgId++, user.getId(),
                     generateRandomLong(1, (numOfGBookUsers * avgMsgPerGBookUser)), location, sendTime, message);
-            appender.appendToFile(gBookMessage.toString());
+            appender.appendToFile(visitor.reset().visit(gBookMessage).toString());
         }
     }
 
-    private static void generateChirpMessages(ChirpUser user, FileAppender appender, long numMsg) throws IOException {
+    private static void generateChirpMessages(ChirpUser user, FileAppender appender, long numMsg,
+            IAppendVisitor visitor) throws IOException {
         Message message;
         for (int i = 0; i < numMsg; i++) {
             message = randMessageGen.getNextRandomMessage(true);
@@ -107,21 +108,23 @@ public class DataGenerator {
             DateTime sendTime = randDateGen.getNextRandomDatetime();
             chirpMessage.reset(chirpMsgId, user, location, sendTime, message.getReferredTopics(), message);
             chirpMsgId++;
-            appender.appendToFile(chirpMessage.toString());
+            appender.appendToFile(visitor.reset().visit(chirpMessage).toString());
         }
     }
 
     public static void main(String args[]) throws Exception {
         String controllerInstallDir = null;
         if (args.length < 2) {
+            System.out.println(" Error: Invalid number of arguments ");
             printUsage();
             System.exit(1);
-        } else {
-            controllerInstallDir = args[0];
-            String partitionConfXML = controllerInstallDir + "/output/partition-conf.xml";
-            String partitionName = args[1];
-            partition = XMLUtil.getPartitionConfiguration(partitionConfXML, partitionName);
         }
+
+        controllerInstallDir = args[0];
+        String partitionConfXML = controllerInstallDir + "/output/partition-conf.xml";
+        String partitionName = args[1];
+        boolean jsonOutput = isJsonOutput(args);
+        partition = XMLUtil.getPartitionConfiguration(partitionConfXML, partitionName);
 
         randDateGen = new RandomDateGenerator(new Date(START_MONTH, START_DAY, START_YEAR),
                 new Date(END_MONTH, END_DAY, END_YEAR));
@@ -148,17 +151,32 @@ public class DataGenerator {
         chirpMsgId = partition.getTargetPartition().getChirpMsgIdMin();
         outputDir = partition.getSourcePartition().getPath();
 
-        generateData();
+        IAppendVisitor visitor = jsonOutput ? new JsonAppendVisitor() : new ADMAppendVisitor();
+        String extension = jsonOutput ? "json" : "adm";
+        generateData(visitor, extension);
+    }
+
+    private static boolean isJsonOutput(String[] args) {
+        if (args.length < 3) {
+            return false;
+        }
+        String outputFormat = args[2];
+        if (outputFormat.equalsIgnoreCase("json")) {
+            return true;
+        } else if (outputFormat.equalsIgnoreCase("adm")) {
+            return false;
+        } else {
+            throw new IllegalArgumentException("Illegal output format " + outputFormat);
+        }
     }
 
     private static void printUsage() {
-        System.out.println(" Error: Invalid number of arguments ");
-        System.out.println(" Usage :" + " DataGenerator <path to configuration file> <partition name> ");
+        System.out.println("Usage : DataGenerator <path to configuration file> <partition name> [JSON|ADM]");
     }
 
-    private static void generateData() throws IOException {
-        generateGbookUsers(numOfGBookUsers);
-        generateChirpUsers(numOfChirpUsers);
+    private static void generateData(IAppendVisitor visitor, String extension) throws IOException {
+        generateGbookUsers(numOfGBookUsers, visitor, extension);
+        generateChirpUsers(numOfChirpUsers, visitor, extension);
         System.out.println("\nData generation in partition " + partition.getTargetPartition().getName() + " finished");
     }
 
@@ -171,11 +189,11 @@ public class DataGenerator {
         }
         long id = gBookUserId++;
         String alias = getUniqueAlias(nameComponents[0], id, MAX_DIGIT);
-        String userSince = randDateGen.getNextRandomDatetime().toString();
+        DateTime userSince = randDateGen.getNextRandomDatetime();
         int numFriends = random.nextInt(11);
         long[] friendIds = RandomIdSelector.getKFromN(numFriends, (numOfGBookUsers));
         int empCount = 1 + random.nextInt(3);
-        ArrayList<Employment> emp = new ArrayList<Employment>(empCount);
+        Employments emp = new Employments(empCount);
         for (int i = 0; i < empCount; i++) {
             Employment e = randEmpGen.getRandomEmployment();
             emp.add(new Employment(e.getOrganization(), e.getStartDate(), e.getEndDate()));

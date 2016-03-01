@@ -1,5 +1,7 @@
 package entity;
 
+import socialGen.ADMAppendVisitor;
+import socialGen.IAppendVisitor;
 import datatype.Date;
 
 public class Employment {
@@ -45,19 +47,15 @@ public class Employment {
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder("");
-        builder.append("{");
-        builder.append("\"organization\":");
-        builder.append("\"" + organization + "\"");
-        builder.append(",");
-        builder.append("\"start_date\":");
-        builder.append(this.startDate);
+        return accept(new ADMAppendVisitor()).toString();
+    }
+
+    public IAppendVisitor accept(IAppendVisitor visitor) {
+        visitor.append("{\"organization\": ").visit(organization);
+        visitor.append(", \"start_date\": ").visit(startDate);
         if (endDate != null) {
-            builder.append(",");
-            builder.append("\"end_date\":");
-            builder.append(this.endDate);
+            visitor.append(", \"end_date\": ").visit(endDate);
         }
-        builder.append("}");
-        return new String(builder);
+        return visitor.append("}");
     }
 }

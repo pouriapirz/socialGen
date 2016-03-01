@@ -1,5 +1,8 @@
 package datatype;
 
+import socialGen.ADMAppendVisitor;
+import socialGen.IAppendVisitor;
+
 public class Point {
 
     private float latitude;
@@ -27,8 +30,10 @@ public class Point {
     }
 
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("point(\"" + latitude + "," + longitude + "\")");
-        return builder.toString();
+        return accept(new ADMAppendVisitor()).toString();
+    }
+
+    public IAppendVisitor accept(IAppendVisitor visitor) {
+        return visitor.append("point(\"" + latitude + "," + longitude + "\")");
     }
 }
