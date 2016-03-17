@@ -55,6 +55,15 @@ public class DataGenerator {
     private final static int MAX_FRIENDS = 400;
     private final static int MAX_STATUS_COUNT = 500;
 
+    public static final String EXT_ADM = "adm";
+    public static final String EXT_JSON = "json";
+
+    enum Output {
+        ADM,
+        JSON,
+        JSON_STRING
+    }
+
     private static RandomDateGenerator randDateGen;
     private static RandomNameGenerator randNameGen;
     private static RandomEmploymentGenerator randEmpGen;
@@ -137,7 +146,7 @@ public class DataGenerator {
         controllerInstallDir = args[0];
         String partitionConfXML = controllerInstallDir + "/output/partition-conf.xml";
         long partitionId = Long.parseLong(args[1]);
-        boolean jsonOutput = isJsonOutput(args);
+        Output output = outputFormat(args);
         partition = XMLUtil.getPartitionConfiguration(partitionConfXML, partitionId);
 
         String firstNameFile = controllerInstallDir + "/metadata/firstNames.txt";
@@ -168,27 +177,45 @@ public class DataGenerator {
         chirpMsgId = partition.getTargetPartition().getChirpMsgIdMin();
         outputDir = partition.getSourcePartition().getPath();
 
-        IAppendVisitor visitor = jsonOutput ? new JsonAppendVisitor() : new ADMAppendVisitor();
-        String extension = jsonOutput ? "json" : "adm";
+        IAppendVisitor visitor;
+        String extension;
+        switch (output) {
+            case ADM:
+                visitor = new ADMAppendVisitor();
+                extension = EXT_ADM;
+                break;
+            case JSON:
+                visitor = new JsonAppendVisitor();
+                extension = EXT_JSON;
+                break;
+            case JSON_STRING:
+                visitor = new JsonStringAppendVisitor();
+                extension = EXT_JSON;
+                break;
+            default:
+                throw new IllegalArgumentException(output.toString());
+        }
         generateData(visitor, extension);
     }
 
-    private static boolean isJsonOutput(String[] args) {
+    private static Output outputFormat(String[] args) {
         if (args.length < 3) {
-            return false;
+            return Output.ADM;
         }
         String outputFormat = args[2];
         if (outputFormat.equalsIgnoreCase("json")) {
-            return true;
+            return Output.JSON;
+        } else if (outputFormat.equalsIgnoreCase("json_string")) {
+            return Output.JSON_STRING;
         } else if (outputFormat.equalsIgnoreCase("adm")) {
-            return false;
+            return Output.ADM;
         } else {
             throw new IllegalArgumentException("Illegal output format " + outputFormat);
         }
     }
 
     private static void printUsage() {
-        System.out.println("Usage : DataGenerator <path to configuration file> <partition name> [JSON|ADM]");
+        System.out.println("Usage : DataGenerator <path to configuration file> <partition name> [ADM|JSON|JSON_STRING]");
     }
 
     private static void generateData(IAppendVisitor visitor, String extension) throws IOException {
