@@ -21,9 +21,9 @@ import datatype.DateTime;
 
 public class RandomDateGenerator {
 
-    private final long sDate;
-    private final long eDate;
-    private final long diff;
+    protected final long sDate;
+    protected final long eDate;
+    protected long diff;
     private final Random random;
     private Date date;
     private DateTime dateTime;

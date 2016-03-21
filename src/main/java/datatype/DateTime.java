@@ -15,8 +15,6 @@
 package datatype;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
 import socialGen.ADMAppendVisitor;
 import socialGen.IAppendVisitor;
@@ -27,11 +25,8 @@ public class DateTime extends Date {
     private int minute;
     private int second;
 
-    private Calendar c;
-
     public DateTime() {
-        this.c = new GregorianCalendar();
-        c.setTimeZone(TimeZone.getTimeZone("GMT"));
+        super();
     }
 
     public DateTime(int month, int day, int year, int hour, int min, int sec) {
@@ -62,10 +57,12 @@ public class DateTime extends Date {
         this.second = sec;
     }
 
+    @Override
     public String toString() {
         return accept(new ADMAppendVisitor()).toString();
     }
 
+    @Override
     public IAppendVisitor accept(IAppendVisitor visitor) {
         super.accept(visitor);
         visitor.append("T");
@@ -73,12 +70,14 @@ public class DateTime extends Date {
         return visitor;
     }
 
+    @Override
     public long toTimestamp() {
         c.clear();
         c.set(year, (month - 1), day, hour, minute, second);
         return c.getTimeInMillis();
     }
 
+    @Override
     public void reset(long ts) {
         c.clear();
         c.setTimeInMillis(ts);
