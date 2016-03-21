@@ -141,6 +141,6 @@ For generating data in ADM format, you simply run:
   For generating data in JSON format, you need to invoke the _init.sh_ script as:
  
  ```
-  > $SOCIAL_GEN_HOME/scripts/init.sh JSON
+  > $SOCIAL_GEN_HOME/scripts/init.sh -f JSON
  ```
 Upon termination of the generation process, you can find three data files (in .adm or .json format, depending on your preference (see previous step)) per partition under the path that is specified for the partition in the conf.xml file.
