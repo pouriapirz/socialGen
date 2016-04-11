@@ -1,7 +1,9 @@
 # SocialGen
 **SocialGen** is a tool for generating large quantities of synthetic data that models status updates and sent messages from users of two imaginary social networks: _Gleambook_ and _Chirp_ networks. SocialGen can be configured to run in a parallel/distributed fashion generating partitions of data in parallel using a cluster of machines.
 
-SocialGen can generate data both in Asterix Data Model (ADM) format and JSON. Here is a sample data type definition for the output of SocialGen:
+SocialGen can generate data both in Asterix Data Model (ADM) format and JSON.
+It can also generate data with either 64-bit integer identifiers or string identifiers.
+Here is a sample data type definition for the output of SocialGen using 64-bit integer identifiers.
 
   ```
   create type EmploymentType as {
@@ -46,6 +48,8 @@ SocialGen can generate data both in Asterix Data Model (ADM) format and JSON. He
     message_text: string
   }
   ```
+
+When using string identifiers, `int64` needs to be replaced with `string` in this type definition.
 
 # Using SocialGen
 ## Prerequisites
@@ -133,14 +137,14 @@ Upon a successful build, a new directory named _target_ will be created under SO
   ```
 7. Run SocialGen to initialize the data generation process: 
  
-For generating data in ADM format, you simply run:
+For generating data in ADM format with 64-bit integer identifiers, you simply run:
   
   ```
   > $SOCIAL_GEN_HOME/scripts/init.sh
   ```
-  For generating data in JSON format, you need to invoke the _init.sh_ script as:
+  For generating data in JSON format with string identifiers, you need to invoke the _init.sh_ script as:
  
  ```
-  > $SOCIAL_GEN_HOME/scripts/init.sh -f JSON
+  > $SOCIAL_GEN_HOME/scripts/init.sh -f JSON -k STRING
  ```
 Upon termination of the generation process, you can find three data files (in .adm or .json format, depending on your preference (see previous step)) per partition under the path that is specified for the partition in the conf.xml file.
