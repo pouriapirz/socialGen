@@ -12,12 +12,6 @@ then
    exit 1
 fi
 
-OUTPUT_FORMAT=$1
-if [ -z $OUTPUT_FORMAT ]
-then
-  OUTPUT_FORMAT=ADM
-fi
-
 java -cp $SOCIAL_GEN_HOME/target/SocialGen.jar socialGen.PreDataGenerator $SOCIAL_GEN_HOME
 
 for i in `cat $SOCIAL_GEN_HOME/output/partitions`
@@ -30,5 +24,5 @@ do
 
   # machine=${i%%:*}
   # partition=${i##*:}
-  ssh $machine $SOCIAL_GEN_LOCAL_HOME/scripts/db-gen.sh $SOCIAL_GEN_HOME $SOCIAL_GEN_LOCAL_HOME $partition $OUTPUT_FORMAT &
+  ssh $machine $SOCIAL_GEN_LOCAL_HOME/scripts/db-gen.sh $SOCIAL_GEN_HOME $SOCIAL_GEN_LOCAL_HOME $partition "$@" &
 done

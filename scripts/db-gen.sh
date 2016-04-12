@@ -4,4 +4,11 @@ then
    exit 1
 fi
 
-java -Xms1g -Xmx2g -cp $2/target/SocialGen.jar socialGen.DataGenerator $1 $3 $4
+SOCIAL_GEN_HOME=$1
+shift
+SOCIAL_GEN_LOCAL_HOME=$1
+shift
+PARTITION=$1
+shift
+
+java -Xms1g -Xmx2g -cp $SOCIAL_GEN_LOCAL_HOME/target/SocialGen.jar socialGen.DataGenerator $SOCIAL_GEN_HOME $PARTITION $@

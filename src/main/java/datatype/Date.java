@@ -27,7 +27,7 @@ public class Date {
     protected int month;
     protected int year;
 
-    private Calendar c;
+    protected Calendar c;
 
     public Date() {
         this.c = new GregorianCalendar();
@@ -60,6 +60,7 @@ public class Date {
         return year;
     }
 
+    @Override
     public String toString() {
         return accept(new ADMAppendVisitor()).toString();
     }

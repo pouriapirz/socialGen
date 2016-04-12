@@ -5,6 +5,18 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>Social Data Generator</name>
   <build>
-  	<finalName>SocialGen</finalName>
+    <finalName>SocialGen</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+          <compilerArgument>-Xlint:all</compilerArgument>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 </project>

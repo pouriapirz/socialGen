@@ -17,6 +17,8 @@ package socialGen;
 import java.io.IOException;
 import java.util.Random;
 
+import utility.FileAppender;
+import utility.FileUtil;
 import conf.PartitionConfiguration;
 import datatype.Date;
 import datatype.DateTime;
@@ -34,8 +36,6 @@ import generator.RandomIdSelector;
 import generator.RandomLocationGenerator;
 import generator.RandomMessageGenerator;
 import generator.RandomNameGenerator;
-import utility.FileAppender;
-import utility.FileUtil;
 
 public class DataGenerator {
 
@@ -54,6 +54,29 @@ public class DataGenerator {
     private final static int END_LONGITUDE = 98;
     private final static int MAX_FRIENDS = 400;
     private final static int MAX_STATUS_COUNT = 500;
+
+    public static final String EXT_ADM = "adm";
+    public static final String EXT_JSON = "json";
+
+    enum Output {
+        ADM,
+        JSON
+    }
+
+    enum KeyType {
+        LONG,
+        STRING
+    }
+
+    private static class OutputDesc {
+        OutputDesc(IAppendVisitor visitor, String extension) {
+            this.visitor = visitor;
+            this.extension = extension;
+        }
+
+        IAppendVisitor visitor;
+        String extension;
+    }
 
     private static RandomDateGenerator randDateGen;
     private static RandomNameGenerator randNameGen;
@@ -130,14 +153,12 @@ public class DataGenerator {
     public static void main(String args[]) throws Exception {
         String controllerInstallDir = null;
         if (args.length < 2) {
-            System.out.println(" Error: Invalid number of arguments ");
-            printUsage();
-            System.exit(1);
+            printUsage(" Error: Invalid number of arguments ");
         }
         controllerInstallDir = args[0];
         String partitionConfXML = controllerInstallDir + "/output/partition-conf.xml";
         long partitionId = Long.parseLong(args[1]);
-        boolean jsonOutput = isJsonOutput(args);
+        OutputDesc od = outputFormat(args);
         partition = XMLUtil.getPartitionConfiguration(partitionConfXML, partitionId);
 
         String firstNameFile = controllerInstallDir + "/metadata/firstNames.txt";
@@ -168,27 +189,84 @@ public class DataGenerator {
         chirpMsgId = partition.getTargetPartition().getChirpMsgIdMin();
         outputDir = partition.getSourcePartition().getPath();
 
-        IAppendVisitor visitor = jsonOutput ? new JsonAppendVisitor() : new ADMAppendVisitor();
-        String extension = jsonOutput ? "json" : "adm";
-        generateData(visitor, extension);
+        generateData(od.visitor, od.extension);
     }
 
-    private static boolean isJsonOutput(String[] args) {
+    private static OutputDesc outputFormat(String[] args) {
         if (args.length < 3) {
-            return false;
+            return new OutputDesc(new ADMAppendVisitor(), EXT_ADM);
         }
-        String outputFormat = args[2];
-        if (outputFormat.equalsIgnoreCase("json")) {
-            return true;
-        } else if (outputFormat.equalsIgnoreCase("adm")) {
-            return false;
-        } else {
-            throw new IllegalArgumentException("Illegal output format " + outputFormat);
+        int i = 2;
+        Output output = Output.ADM;
+        KeyType keyType = KeyType.LONG;
+        while (i < args.length) {
+            String arg = args[i];
+            if (!arg.startsWith("-")) {
+                printUsage("unsupported argument " + arg);
+            }
+            switch (arg) {
+                case "-f":
+                    if (i + 1 >= args.length) {
+                        printUsage("missing parameter for " + arg);
+                    }
+                    String outputFormat = args[++i];
+                    if (outputFormat.equalsIgnoreCase("json")) {
+                        output = Output.JSON;
+                    } else if (outputFormat.equalsIgnoreCase("adm")) {
+                        output = Output.ADM;
+                    } else {
+                        printUsage("Illegal output format " + outputFormat);
+                    }
+                    break;
+                case "-k":
+                    if (i + 1 >= args.length) {
+                        printUsage("missing parameter for " + arg);
+                    }
+                    String keyFormat = args[++i];
+                    if (keyFormat.equalsIgnoreCase("long")) {
+                        keyType = KeyType.LONG;
+                    } else if (keyFormat.equalsIgnoreCase("string")) {
+                        keyType = KeyType.STRING;
+                    } else {
+                        printUsage("Illegal key format " + keyFormat);
+                    }
+                    break;
+                default:
+                    printUsage("unknown option " + arg);
+            }
+            ++i;
         }
+
+        IAppendVisitor visitor;
+        switch (output) {
+            case ADM:
+                visitor = (keyType == KeyType.LONG ? new ADMAppendVisitor() : new ADMAppendVisitor() {
+                    public IAppendVisitor visit(long l) {
+                        builder.append('"').append(l).append('"');
+                        return this;
+                    }
+                });
+                return new OutputDesc(visitor, EXT_ADM);
+            case JSON:
+                visitor = (keyType == KeyType.LONG ? new JsonAppendVisitor() : new JsonAppendVisitor() {
+                    public IAppendVisitor visit(long l) {
+                        builder.append('"').append(l).append('"');
+                        return this;
+                    }
+                });
+                return new OutputDesc(visitor, EXT_JSON);
+            default:
+                throw new IllegalArgumentException(output.toString());
+        }
+
     }
 
-    private static void printUsage() {
-        System.out.println("Usage : DataGenerator <path to configuration file> <partition name> [JSON|ADM]");
+    private static void printUsage(String msg) {
+        System.out.println(msg);
+        System.out.println("Usage : DataGenerator <path to configuration file> <partition name> [<options>]");
+        System.out.println("Options : -f [ADM|JSON]    (format - default: ADM)");
+        System.out.println("          -k [LONG|STRING] (key type - default: LONG)");
+        System.exit(1);
     }
 
     private static void generateData(IAppendVisitor visitor, String extension) throws IOException {
